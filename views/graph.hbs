@@ -1,0 +1,63 @@
+<div id="container_{{sensor}}" style="width:100%; height:400px;"></div>
+<script>
+    $(function () {
+        $(document).ready(function () {
+            Highcharts.setOptions({
+                global: {
+                    useUTC: false
+                }
+            });
+
+            $.getJSON("/sensors/{{sensor}}", function(result){
+                console.log(result);
+                console.log(typeof result);
+                $("#container_{{sensor}}").highcharts({
+                    chart: {
+                        type: 'spline',
+                        marginRight: 10
+                    },
+                    title: {
+                        text: '{{title}}'
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        tickPixelInterval: 150
+                    },
+                    yAxis: {
+                        title: {
+                            text: '{{type}}'
+                        },
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }]
+                    },
+                    plotOptions: {
+                        series: {
+                            animation: false
+                        }
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return '<b>' + this.series.name + '</b><br/>' +
+                                    Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                    Highcharts.numberFormat(this.y, 2);
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: '{{type}}',
+                        data: result
+                    }]
+                });
+            });
+
+        });
+    });
+</script>

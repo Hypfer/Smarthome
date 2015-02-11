@@ -29,7 +29,7 @@ var _setupClient = function () {
         var collection = db.collection(receivedMessage[0]);
 
         collection.insert([{
-            v1: parseFloat(receivedMessage[1]),
+            v: parseFloat(receivedMessage[1]),
             ts: new Date()
         }], function(err) {
                 assert.equal(err, null);
@@ -100,7 +100,7 @@ var _setupWeb = function () {
             docs.forEach(function(doc){
                 returnArray.push({
                     x: doc.ts.getTime(),
-                    y: doc.v1
+                    y: doc.v
 
                 });
             });

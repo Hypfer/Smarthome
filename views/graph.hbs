@@ -14,7 +14,21 @@
                 $("#container_{{sensor}}").highcharts({
                     chart: {
                         type: 'spline',
-                        marginRight: 10
+                        marginRight: 10,
+                        events: {
+                            load: function () {
+
+                                // update every 30 seconds
+                                var series = this.series[0];
+                                setInterval(function () {
+                                    $.getJSON("/sensors/{{sensor}}?minutes=0.5", function(updates){
+                                       updates.forEach(function(update){
+                                           series.addPoint([update.x, update.y], true, true);
+                                       });
+                                    });
+                                }, 30000);
+                            }
+                        }
                     },
                     title: {
                         text: '{{title}}'

@@ -10,8 +10,69 @@ var _ = require('underscore');
 url = require('url');
 async = require('async');
 
+
+
+
+var gaugeTypes = {
+    temp: {
+        glow: true,
+        units: "°C",
+        title: "Temperature",
+        minValue: -25,
+        maxValue: 45,
+        majorTicks: "['-25','-20','-15','-10','-5','0','5','10','15','20','25','30','35','40','45']",
+        minorTicks: 5,
+        strokeTicks: true,
+        highlights: "[{ from : -25, to : 0, color : 'rgba(0,   0, 255, .3)' },{ from : 0, to : 45, color : 'rgba(255, 0, 0, .3)'}]",
+        colors: "{plate      : '#f5f5f5',majorTicks : '#000',minorTicks : '#222',title      : '#222',units      : '#666',numbers    : '#222',needle     : { start : 'rgba(240, 128, 128, 1)', end : 'rgba(255, 160, 122, .9)' }}",
+        valueFormat : "{ int : 2, dec : 2 }"
+    },
+    hum: {
+        glow: true,
+        units: "RH %",
+        title: "Rel. Humidity",
+        minValue: 0,
+        maxValue: 100,
+        majorTicks: "['0','10','20','30','40','50','60','70','80','90','100']",
+        minorTicks: 10,
+        strokeTicks: true,
+        highlights: "[{ from : 0, to : 35, color : '#d14f1b' },{ from : 35, to : 40, color : '#a1b441' },{ from : 40, to : 60, color : '#628914' },{ from : 60, to : 65, color : '#a1b441' },{ from : 65, to : 100, color : '#3767bc'}]",
+        colors: "{plate      : '#f5f5f5',majorTicks : '#000',minorTicks : '#222',title      : '#222',units      : '#666',numbers    : '#222',needle     : { start : 'rgba(240, 128, 128, 1)', end : 'rgba(255, 160, 122, .9)' }}",
+        valueFormat : "{ int : 2, dec : 2 }"
+    },
+    amp: {
+        glow: true,
+        units: "⚡Amp",
+        title: "Ampere",
+        minValue: 0,
+        maxValue: 15,
+        majorTicks: "['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15']",
+        minorTicks: 10,
+        strokeTicks: true,
+        highlights: "[{ from : 0, to : 12, color : '#fff' },{ from : 12, to : 15, color : '#d14f1b' }]",
+        colors: "{plate      : '#f5f5f5',majorTicks : '#000',minorTicks : '#222',title      : '#222',units      : '#666',numbers    : '#222',needle     : { start : 'rgba(240, 128, 128, 1)', end : 'rgba(255, 160, 122, .9)' }}",
+        valueFormat : "{ int : 2, dec : 3 }"
+    },
+    voc: {
+        glow: true,
+        units: "VOC/ppm",
+        title: "Air Quality",
+        minValue: 400,
+        maxValue: 2500,
+        majorTicks: "['400','700','1000','1300','1600','1900','2200','2500']",
+        minorTicks: 6,
+        strokeTicks: true,
+        highlights: "[{ from : 400, to : 1000, color : '#0081c7' },{ from : 1000, to : 1500, color : '#86c9ec' },{ from : 1500, to : 2500, color : '#ffdf00' }]",
+        colors: "{plate      : '#f5f5f5',majorTicks : '#000',minorTicks : '#222',title      : '#222',units      : '#666',numbers    : '#222',needle     : { start : 'rgba(240, 128, 128, 1)', end : 'rgba(255, 160, 122, .9)' }}",
+        valueFormat : "{ int : 4, dec : 0 }"
+    }
+};
+
+
+
 function averageChunk(data,chunkSize) {
-    if (chunkSize > 2) {
+    if (chunkSize > 1) {
+        chunkSize = chunkSize > 2 ? chunkSize : chunkSize+1;
         var slimData = [];
         while(data.length > chunkSize) {
             var chunk = _.first(data, chunkSize);
@@ -37,6 +98,8 @@ module.exports = {
         console.log("Starting Webserver...");
         var graphTpl = fs.readFileSync("./views/graph.hbs");
         var graphTemplate = hbs.compile(graphTpl.toString());
+        var gaugeTpl = fs.readFileSync("./views/gauge.hbs");
+        var gaugeTemplate = hbs.compile(gaugeTpl.toString());
 
 
         var app = express();
@@ -52,12 +115,13 @@ module.exports = {
 
         app.get('/', function (req,res) {
             minutes = req.query.minutes ? req.query.minutes : 30;
-            var sensors = [];
+            var graphs = [];
+            var gauges = [];
             var collection = db.collection("Sensors");
             collection.find().toArray(function(err,docs){
                 assert.equal(null,err);
                 docs.forEach(function(doc){
-                    sensors.push({
+                    graphs.push({
                         body: graphTemplate({
                             sensor: doc.sensor,
                             title: doc.fN,
@@ -65,9 +129,27 @@ module.exports = {
                             minutes: minutes
                         })
                     });
+
+                    var gaugeOptions = {
+                        minValue: 0,
+                        maxValue: 100
+                    };
+                    if (doc.gauge) {
+                        gaugeOptions = gaugeTypes[doc.gauge] ? gaugeTypes[doc.gauge] : gaugeOptions;
+                    }
+                    gaugeOptions.sensor = doc.sensor;
+                    gaugeOptions.value = 0;
+                    gaugeOptions.width = 240;
+                    gaugeOptions.height = 240;
+                    gaugeOptions.title = doc.sensor;
+
+                    gauges.push({
+                        body: gaugeTemplate(gaugeOptions),
+                        fN: doc.fN
+                    });
                 });
             });
-            res.render('index', {sensors: sensors});
+            res.render('index', {graphs: graphs, gauges: gauges});
 
         });
         app.get('/api/sensors', function(req,res) {
@@ -199,6 +281,41 @@ module.exports = {
                 minutes: minutes,
                 sensorsUrl: sensorsUrl});
         });
+        app.get("/gauge/:id", function(req,res){
+            var collection = db.collection(req.params.id);
+            minutes = req.query.minutes ? req.query.minutes : 5;
+            minutes = minutes > 30 ? 30 : minutes;
+
+            collection.find({ts: { $gt: new Date(new Date() - 1000*60*minutes)}}).toArray(function(err,docs){
+                assert.equal(null, err);
+
+                var collection2 = db.collection("Sensors");
+                collection2.find({sensor: req.params.id}).toArray(function(err2,docs2){
+                    var sum = 0;
+                    docs.forEach(function(doc){
+                        sum = sum + doc.v;
+                    });
+                    var gaugeOptions = {
+                        minValue: 0,
+                        maxValue: 100
+                    };
+                    if(docs2[0]) {
+                        gaugeOptions = gaugeTypes[docs2[0].gauge];
+                    }
+                    if (req.query.type) {
+                        gaugeOptions = gaugeTypes[req.query.type] ? gaugeTypes[req.query.type] : gaugeOptions;
+                    }
+                    gaugeOptions.sensor = req.params.id;
+                    gaugeOptions.value = (sum/docs.length).toString();
+                    gaugeOptions.width = 300;
+                    gaugeOptions.height = 300;
+                    gaugeOptions.standalone = true;
+                    res.render("gauge", gaugeOptions);
+                });
+            });
+        });
+
+
 
 
         app.listen(3001, function () {

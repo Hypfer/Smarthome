@@ -16,7 +16,7 @@ module.exports = {
 
         socket.on('message', function(message) {
             receivedMessage = message.toString().split("|");
-            console.log(message.toString());
+            //console.log(message.toString());
             var collection = db.collection(receivedMessage[0]);
 
             collection.insert([{

@@ -3,6 +3,7 @@
  */
 var web = require('./web');
 var broadcast = require('./broadcast');
+var local = require('./local');
 
 var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
@@ -21,5 +22,6 @@ MongoClient.connect(url, function(err, _db) {
     console.log("Connected to MongoDB.");
 
     broadcast._setupBroadcastListener(db);
+    local.local(db);
     web._setupWeb(db);
 });

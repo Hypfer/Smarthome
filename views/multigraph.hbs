@@ -1,4 +1,6 @@
-<div id="container_{{sensor}}" style="width:100%; height:400px;"></div>
+<script type="text/javascript" src="/jquery-2.1.1.js"></script>
+<script type="text/javascript" src="/highcharts.js"></script>
+<div id="container_multi" style="width:100%; height:400px;"></div>
 <script>
     $(function () {
         $(document).ready(function () {
@@ -8,32 +10,12 @@
                 }
             });
 
-            $.getJSON("/api/sensors/{{sensor}}?minutes={{minutes}}", function(result){
-                $("#container_{{sensor}}").highcharts({
+            $.getJSON("/api/sensors/{{sensorsUrl}}?minutes={{minutes}}", function (result) {
+                $("#container_multi").highcharts({
                     chart: {
                         type: 'spline',
                         zoomType: 'x',
-                        marginRight: 10,
-                        events: {
-                            load: function () {
-
-                                // update every 30 seconds
-                                var series = this.series[0];
-                                setInterval(function () {
-                                    $.getJSON("/api/sensors/{{sensor}}?minutes=0.5", function(updates){
-                                       updates.forEach(function(update){
-                                           var x,y;
-                                           var updateO = {
-                                               x: update[0],
-                                               y: update[1]
-                                           };
-                                           console.log(updateO);
-                                           series.addPoint([updateO.x, updateO.y], true, true);
-                                       });
-                                    });
-                                }, 30000);
-                            }
-                        }
+                        marginRight: 10
                     },
                     title: {
                         text: '{{title}}'
@@ -75,13 +57,9 @@
                     exporting: {
                         enabled: false
                     },
-                    series: [{
-                        name: '{{type}}',
-                        data: result
-                    }]
+                    series: {{{sensors}}}
                 });
             });
-
         });
     });
 </script>

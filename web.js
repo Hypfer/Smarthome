@@ -27,7 +27,7 @@ module.exports = {
 
 
         app.get('/', function (req,res) {
-
+            minutes = req.query.minutes ? req.query.minutes : 30;
             var sensors = [];
             var collection = db.collection("Sensors");
             collection.find().toArray(function(err,docs){
@@ -37,7 +37,8 @@ module.exports = {
                         body: graphTemplate({
                             sensor: doc.sensor,
                             title: doc.fN,
-                            type: doc.value
+                            type: doc.value,
+                            minutes: minutes
                         })
                     });
                 });

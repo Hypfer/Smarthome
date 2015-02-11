@@ -8,7 +8,7 @@
                 }
             });
 
-            $.getJSON("/sensors/{{sensor}}", function(result){
+            $.getJSON("/sensors/{{sensor}}?minutes={{minutes}}", function(result){
                 console.log(result);
                 console.log(typeof result);
                 $("#container_{{sensor}}").highcharts({

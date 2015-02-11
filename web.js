@@ -155,8 +155,6 @@ module.exports = {
                 sensors.push({name: sensor, data: "result["+sensor+"]"})
 
             });
-            console.log(JSON.stringify(sensors));
-
 
             //This is an insane hack
             var sensorsString = JSON.stringify(sensors).replace(/,"data":"/g, ',"data":').replace(/"}/g, '}').replace(/result\[/g, 'result["').replace(/\]/g, '"]');

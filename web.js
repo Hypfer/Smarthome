@@ -10,6 +10,27 @@ var _ = require('underscore');
 url = require('url');
 async = require('async');
 
+function averageChunk(data,chunkSize) {
+    if (chunkSize > 2) {
+        var slimData = [];
+        while(data.length > chunkSize) {
+            var chunk = _.first(data, chunkSize);
+            data = _.rest(data, chunkSize-1);
+
+            var avgTS = Math.floor((chunk[0][0] + chunk[chunkSize-1][0])/2);
+            var avgV = 0;
+            chunk.forEach(function(kV){
+                avgV = avgV + kV[1];
+            });
+            slimData.push([avgTS,avgV/chunkSize]);
+        }
+        return slimData;
+    } else {
+        return data;
+
+    }
+}
+
 module.exports = {
 
     _setupWeb: function(db) {
@@ -60,6 +81,11 @@ module.exports = {
         app.get('/api/sensors/:id', function(req,res){
             var collection = db.collection(req.params.id);
             minutes = req.query.minutes ? req.query.minutes : 30;
+            var chunkSize = Math.floor(minutes/100);
+            if (chunkSize > 10) {
+                chunkSize = 10
+            }
+
             collection.find({ts: { $gt: new Date(new Date() - 1000*60*minutes)}}).toArray(function(err,docs){
                 assert.equal(null, err);
                 var returnArray = [];
@@ -72,7 +98,7 @@ module.exports = {
                 function sortfunc(a,b){
                     return a[0] - b[0];
                 }
-                res.send(returnArray.sort(sortfunc));
+                res.send(averageChunk(returnArray.sort(sortfunc),chunkSize));
             });
         });
         app.get('/api/sensors/:id/*', function(req,res){
@@ -85,6 +111,11 @@ module.exports = {
             path = _.uniq(path.slice(2));
 
             minutes = req.query.minutes ? req.query.minutes : 30;
+            var chunkSize = Math.floor(minutes/100);
+            if (chunkSize > 10) {
+                chunkSize = 10
+            }
+
             var returnObj = {};
             async.each(path, function(sensor,callback){
                 var collection = db.collection(sensor);
@@ -100,7 +131,7 @@ module.exports = {
                     function sortfunc(a,b){
                         return a[0] - b[0];
                     }
-                    returnObj[sensor] = returnArray.sort(sortfunc);
+                    returnObj[sensor] = averageChunk(returnArray.sort(sortfunc),chunkSize);
                     callback();
                 });
             }, function(err){

@@ -107,7 +107,7 @@ module.exports = {
         }));
 
         app.get('/', function(req, res) {
-            minutes = req.query.minutes ? req.query.minutes : 30;
+            var minutes = req.query.minutes ? req.query.minutes : 30;
             var graphs = [];
             var gauges = [];
             var collection = db.collection("Sensors");
@@ -128,14 +128,19 @@ module.exports = {
                         minValue: 0,
                         maxValue: 100
                     };
+
                     if (doc.gauge) {
                         gaugeOptions = gaugeTypes[doc.gauge] ? gaugeTypes[doc.gauge] : gaugeOptions;
                     }
+
                     gaugeOptions.sensor = doc.sensor;
                     gaugeOptions.value = 0;
                     gaugeOptions.width = 240;
                     gaugeOptions.height = 240;
                     gaugeOptions.title = doc.sensor;
+
+                    // make sure we're not reloading jquery et al
+                    gaugeOptions.standalone = false;
 
                     gauges.push({
                         body: gaugeTemplate(gaugeOptions),
@@ -159,7 +164,7 @@ module.exports = {
         });
         app.get('/api/sensors/:id', function(req, res) {
             var collection = db.collection(req.params.id);
-            minutes = req.query.minutes ? req.query.minutes : 30;
+            var minutes = req.query.minutes ? req.query.minutes : 30;
             var chunkSize = Math.floor(minutes / 100);
             if (chunkSize > 10) {
                 chunkSize = 10
@@ -180,9 +185,10 @@ module.exports = {
                     ]);
                 });
 
-                function sortfunc(a, b) {
+                var sortfunc = function (a, b) {
                     return a[0] - b[0];
-                }
+                };
+
                 res.send(averageChunk(returnArray.sort(sortfunc), chunkSize));
             });
         });
@@ -199,15 +205,17 @@ module.exports = {
             path = _.uniq(path.slice(2));
 
             var minutes = req.query.minutes ? req.query.minutes : 30;
-            
             var chunkSize = Math.floor(minutes / 100);
+
             if (chunkSize > 10) {
                 chunkSize = 10
             }
 
             var returnObj = {};
-            async.each(path, function(sensor, callback) {
+
+            async.each(path, function(sensor, cb) {
                 var collection = db.collection(sensor);
+
                 collection.find({
                     ts: {
                         $gt: new Date(new Date() - 1000 * 60 * minutes)
@@ -216,6 +224,7 @@ module.exports = {
                     if(err) return res.status(500).json(err);
 
                     var returnArray = [];
+
                     docs.forEach(function(doc) {
                         returnArray.push([
                             doc.ts.getTime(),
@@ -223,11 +232,12 @@ module.exports = {
                         ]);
                     });
 
-                    function sortfunc(a, b) {
+                    var sortfunc = function (a, b) {
                         return a[0] - b[0];
                     }
                     returnObj[sensor] = averageChunk(returnArray.sort(sortfunc), chunkSize);
-                    callback();
+                    
+                    cb();
                 });
             }, function(err) {
                 res.send(returnObj);
@@ -237,7 +247,8 @@ module.exports = {
         app.get('/graph/:id', function(req, res) {
             var sensors = [];
             var collection = db.collection("Sensors");
-            minutes = req.query.minutes ? req.query.minutes : 30;
+            var minutes = req.query.minutes ? req.query.minutes : 30;
+
             collection.find({
                 sensor: req.params.id
             }).toArray(function(err, docs) {
@@ -254,12 +265,13 @@ module.exports = {
                     });
                 });
             });
+
             res.render('index', {
                 sensors: sensors
             });
         });
         app.get('/graph/:id/*', function(req, res) {
-            minutes = req.query.minutes ? req.query.minutes : 30;
+            var minutes = req.query.minutes ? req.query.minutes : 30;
             var path = url.parse(req.url).pathname;
             // split and remove empty element;
             path = path.split('/').filter(function(e) {
@@ -274,10 +286,13 @@ module.exports = {
             //title
             //type
             var sensorsUrl = "";
+
             path.forEach(function(path) {
                 sensorsUrl += path + "/"
             });
+
             var sensors = [];
+            
             path.forEach(function(sensor) {
                 sensors.push({
                     name: sensor,
@@ -299,8 +314,9 @@ module.exports = {
         });
         app.get("/gauge/:id", function(req, res) {
             var collection = db.collection(req.params.id);
-            minutes = req.query.minutes ? req.query.minutes : 5;
-            minutes = minutes > 30 ? 30 : minutes;
+
+            var minutes = req.query.minutes ? req.query.minutes : 5;
+                minutes = minutes > 30 ? 30 : minutes;
 
             collection.find({
                 ts: {
@@ -310,28 +326,35 @@ module.exports = {
                 if(err) return res.status(500).json(err);
 
                 var collection2 = db.collection("Sensors");
+
                 collection2.find({
                     sensor: req.params.id
                 }).toArray(function(err2, docs2) {
                     var sum = 0;
+
                     docs.forEach(function(doc) {
                         sum = sum + doc.v;
                     });
+
                     var gaugeOptions = {
                         minValue: 0,
                         maxValue: 100
                     };
+
                     if (docs2[0]) {
                         gaugeOptions = gaugeTypes[docs2[0].gauge];
-                    }
-                    if (req.query.type) {
+                    } else if (req.query.type) {
                         gaugeOptions = gaugeTypes[req.query.type] ? gaugeTypes[req.query.type] : gaugeOptions;
                     }
+
                     gaugeOptions.sensor = req.params.id;
                     gaugeOptions.value = (sum / docs.length).toString();
                     gaugeOptions.width = 300;
                     gaugeOptions.height = 300;
+
+                    // explicitly include jquery et al.
                     gaugeOptions.standalone = true;
+
                     res.render("gauge", gaugeOptions);
                 });
             });

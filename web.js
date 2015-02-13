@@ -64,9 +64,7 @@ var gaugeTypes = {
     }
 };
 
-
-
-function averageChunk(data, chunkSize) {
+var averageChunk = function (data, chunkSize) {
     if (chunkSize > 1) {
         chunkSize = chunkSize > 2 ? chunkSize : chunkSize + 1;
         var slimData = [];
@@ -76,20 +74,20 @@ function averageChunk(data, chunkSize) {
 
             var avgTS = Math.floor((chunk[0][0] + chunk[chunkSize - 1][0]) / 2);
             var avgV = 0;
+            
             chunk.forEach(function(kV) {
                 avgV = avgV + kV[1];
             });
+
             slimData.push([avgTS, avgV / chunkSize]);
         }
         return slimData;
     } else {
         return data;
-
     }
 }
 
 module.exports = {
-
     _setupWeb: function(db) {
         console.log("Starting Webserver...");
         var graphTpl = fs.readFileSync("./views/graph.hbs");
@@ -114,7 +112,8 @@ module.exports = {
             var gauges = [];
             var collection = db.collection("Sensors");
             collection.find().toArray(function(err, docs) {
-                assert.equal(null, err);
+                if(err) return res.status(500).json(err);
+
                 docs.forEach(function(doc) {
                     graphs.push({
                         body: graphTemplate({
@@ -153,9 +152,9 @@ module.exports = {
         app.get('/api/sensors', function(req, res) {
             var collection = db.collection("Sensors");
             collection.find().toArray(function(err, docs) {
-                assert.equal(null, err);
-                res.send(docs);
+                if(err) return res.status(500).json(err);
 
+                res.send(docs);
             });
         });
         app.get('/api/sensors/:id', function(req, res) {
@@ -171,7 +170,8 @@ module.exports = {
                     $gt: new Date(new Date() - 1000 * 60 * minutes)
                 }
             }).toArray(function(err, docs) {
-                assert.equal(null, err);
+                if(err) return res.status(500).json(err);
+
                 var returnArray = [];
                 docs.forEach(function(doc) {
                     returnArray.push([
@@ -186,16 +186,20 @@ module.exports = {
                 res.send(averageChunk(returnArray.sort(sortfunc), chunkSize));
             });
         });
+
         app.get('/api/sensors/:id/*', function(req, res) {
             var path = url.parse(req.url).pathname;
+
             // split and remove empty element;
             path = path.split('/').filter(function(e) {
                 return e.length > 0;
             });
+
             // remove the first component (graph)
             path = _.uniq(path.slice(2));
 
-            minutes = req.query.minutes ? req.query.minutes : 30;
+            var minutes = req.query.minutes ? req.query.minutes : 30;
+            
             var chunkSize = Math.floor(minutes / 100);
             if (chunkSize > 10) {
                 chunkSize = 10
@@ -209,7 +213,8 @@ module.exports = {
                         $gt: new Date(new Date() - 1000 * 60 * minutes)
                     }
                 }).toArray(function(err, docs) {
-                    assert.equal(null, err);
+                    if(err) return res.status(500).json(err);
+
                     var returnArray = [];
                     docs.forEach(function(doc) {
                         returnArray.push([
@@ -227,10 +232,7 @@ module.exports = {
             }, function(err) {
                 res.send(returnObj);
             });
-
-
         });
-
 
         app.get('/graph/:id', function(req, res) {
             var sensors = [];
@@ -239,7 +241,8 @@ module.exports = {
             collection.find({
                 sensor: req.params.id
             }).toArray(function(err, docs) {
-                assert.equal(null, err);
+                if(err) return res.status(500).json(err);
+
                 docs.forEach(function(doc) {
                     sensors.push({
                         body: graphTemplate({
@@ -276,18 +279,15 @@ module.exports = {
             });
             var sensors = [];
             path.forEach(function(sensor) {
-
                 sensors.push({
                     name: sensor,
                     data: "result[" + sensor + "]"
                 })
-
             });
 
             //This is an insane hack
             var sensorsString = JSON.stringify(sensors).replace(/,"data":"/g, ',"data":').replace(/"}/g, '}').replace(/result\[/g, 'result["').replace(/\]/g, '"]');
             sensorsString = sensorsString.substring(0, sensorsString.length - 2) + "]";
-
 
             res.render('multigraph', {
                 sensors: sensorsString,
@@ -307,7 +307,7 @@ module.exports = {
                     $gt: new Date(new Date() - 1000 * 60 * minutes)
                 }
             }).toArray(function(err, docs) {
-                assert.equal(null, err);
+                if(err) return res.status(500).json(err);
 
                 var collection2 = db.collection("Sensors");
                 collection2.find({
@@ -336,8 +336,6 @@ module.exports = {
                 });
             });
         });
-
-
 
         app.listen(3001, function() {
             console.log('Webserver listening on port %s', "3001");

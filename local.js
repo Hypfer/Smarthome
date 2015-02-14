@@ -6,7 +6,7 @@ child_process = require("child_process");
 var isRunning;
 
 // automatic loop
-var _poll = function() {
+var _poll = function(db) {
     var _next = function () {
         setTimeout(_poll, 15E3)
     };

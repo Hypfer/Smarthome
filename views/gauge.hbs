@@ -64,7 +64,7 @@
 
     gauge_{{sensor}}.onready = function() {
 
-        $.getJSON("/api/sensors/{{sensor}}?minutes=15", function(updates) {
+        $.getJSON("/api/sensors/{{sensor}}?minutes=0.5", function(updates) {
             if (updates.length > 0) {
                 var sum = 0;
                 updates.forEach(function (update) {

@@ -2,6 +2,7 @@
  * Created by hypfer on 11.02.15.
  */
 var dgram = require('dgram');
+var assert = require('assert');
 module.exports = {
     _setupBroadcastListener: function(db) {
 
@@ -23,6 +24,7 @@ module.exports = {
                     v: parseFloat(receivedMessage[1]),
                     ts: new Date()
                 }], function(err) {
+                    //TODO: Remove assert
                     assert.equal(err, null);
                 }
 

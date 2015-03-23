@@ -85,7 +85,7 @@ var averageChunk = function (data, chunkSize) {
     } else {
         return data;
     }
-}
+};
 
 module.exports = {
     _setupWeb: function(db) {
@@ -106,6 +106,16 @@ module.exports = {
             extended: true
         }));
 
+        // CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
+        app.all('*', function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "X-Requested-With");
+            res.header('Access-Control-Allow-Headers', 'Content-Type');
+            next();
+        });
+
+
+
         app.get('/', function(req, res) {
             var minutes = req.query.minutes ? req.query.minutes : 30;
             var graphs = [];
@@ -115,14 +125,6 @@ module.exports = {
                 if(err) return res.status(500).json(err);
 
                 docs.forEach(function(doc) {
-                    graphs.push({
-                        body: graphTemplate({
-                            sensor: doc.sensor,
-                            title: doc.fN,
-                            type: doc.value,
-                            minutes: minutes
-                        })
-                    });
 
                     var gaugeOptions = {
                         minValue: 0,
@@ -144,14 +146,19 @@ module.exports = {
 
                     gauges.push({
                         body: gaugeTemplate(gaugeOptions),
-                        fN: doc.fN
+                        fN: doc.fN,
+                        sensor: doc.sensor
                     });
                 });
             });
             res.render('index', {
-                graphs: graphs,
                 gauges: gauges
             });
+
+        });
+        app.get('/test', function(req,res){
+
+            res.render('index2',{});
 
         });
         app.get('/api/sensors', function(req, res) {
@@ -159,7 +166,7 @@ module.exports = {
             collection.find().toArray(function(err, docs) {
                 if(err) return res.status(500).json(err);
 
-                res.send(docs);
+                res.json(docs);
             });
         });
         app.get('/api/sensors/:id', function(req, res) {
@@ -189,7 +196,41 @@ module.exports = {
                     return a[0] - b[0];
                 };
 
-                res.send(averageChunk(returnArray.sort(sortfunc), chunkSize));
+                res.json(averageChunk(returnArray.sort(sortfunc), chunkSize));
+            });
+        });
+        app.get('/api/sensors/:id/AverageByTimeframe', function(req,res){
+
+            var collection = db.collection(req.params.id);
+
+            if (req.query.start) {
+                var start = req.query.start;
+            } else {
+                return res.status(500).send("Missing start parameter");
+            }
+            var end = req.query.end ? req.query.end : new Date();
+
+            collection.find({
+                ts: {
+                    $gte: new Date(start),
+                    $lte: new Date(end)
+                }
+            }).toArray(function(err, docs) {
+                if(err) return res.status(500).json(err);
+
+                var sum = 0;
+
+                docs.forEach(function(doc) {
+                    sum = sum + doc.v;
+                });
+
+
+                res.json({
+                    sensor: req.params.id,
+                    start: docs.length > 0 ? docs[0].ts : start,
+                    end: docs.length > 0 ? docs[docs.length-1].ts : end,
+                    avg: docs.length > 0 ? sum/docs.length : 0
+                });
             });
         });
 
@@ -234,15 +275,16 @@ module.exports = {
 
                     var sortfunc = function (a, b) {
                         return a[0] - b[0];
-                    }
+                    };
                     returnObj[sensor] = averageChunk(returnArray.sort(sortfunc), chunkSize);
                     
                     cb();
                 });
             }, function(err) {
-                res.send(returnObj);
+                res.json(returnObj);
             });
         });
+
 
         app.get('/graph/:id', function(req, res) {
             var sensors = [];
@@ -254,20 +296,12 @@ module.exports = {
             }).toArray(function(err, docs) {
                 if(err) return res.status(500).json(err);
 
-                docs.forEach(function(doc) {
-                    sensors.push({
-                        body: graphTemplate({
-                            sensor: doc.sensor,
-                            title: doc.fN,
-                            type: doc.value,
-                            minutes: minutes
-                        })
-                    });
+                res.render('graph', {
+                    sensor: docs[0].sensor,
+                    title:  docs[0].fN,
+                    type:   docs[0].value,
+                    minutes: minutes
                 });
-            });
-
-            res.render('index', {
-                sensors: sensors
             });
         });
         app.get('/graph/:id/*', function(req, res) {
@@ -359,6 +393,46 @@ module.exports = {
                 });
             });
         });
+
+        //POWER SOCKETS
+        app.get("/api/switches", function(req,res){
+            var collection = db.collection("Switches");
+            collection.find().toArray(function(err, docs) {
+                if(err) return res.status(500).json(err);
+
+                res.json(docs);
+            });
+        });
+        app.get("/api/switches/:id/getState",function(req,res){
+            //If state capable send state else unknown
+
+
+        });
+
+        app.get("/api/switches/:id/:state", function(req,res){
+
+            if(!(req.params.state == "0" || req.params.state == "1")) {
+                return res.status(500).send("INVALID STATE");
+            }
+            var collection = db.collection("Switches");
+
+            collection.find({
+                name: req.params.id
+            }).toArray(function(err, docs) {
+                if(err) return res.status(500).json(err);
+                if (docs.length == 0) {
+                    return res.status(500).send("UNMAPPED SENSOR");
+                }
+                res.send("HI");
+
+            });
+
+
+        });
+
+
+
+
 
         app.listen(3001, function() {
             console.log('Webserver listening on port %s', "3001");

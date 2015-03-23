@@ -7,8 +7,8 @@ var isRunning;
 
 // automatic loop
 var _poll = function(db) {
-    var _next = function () {
-        setTimeout(_poll, 15E3)
+    var _next = function (db) {
+        setTimeout(_poll(db), 15E3)
     };
 
     child_process.exec("/usr/local/bin/airsensor -o -v", function(err, stdout) {
@@ -21,10 +21,10 @@ var _poll = function(db) {
             }], function(err) {
                 console.log("GOT ERROR:", err);
 
-                _next();
+                _next(db);
             });
 
-        return _next();
+        return _next(db);
     })
 };
 
@@ -33,6 +33,6 @@ module.exports = {
         if (isRunning) return console.trace("BUG: airsensor polling has already started.");
         isRunning = true;
 
-        _poll();
+        _poll(db);
     }
 };

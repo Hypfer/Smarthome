@@ -18,17 +18,20 @@ module.exports = {
         socket.on('message', function(message) {
             receivedMessage = message.toString().split("|");
             //console.log(message.toString());
-            var collection = db.collection(receivedMessage[0]);
+            if(receivedMessage[0] == "EVENT") {
+                console.log(message.toString());
+            } else {
+                var collection = db.collection(receivedMessage[0]);
 
-            collection.insert([{
-                    v: parseFloat(receivedMessage[1]),
-                    ts: new Date()
-                }], function(err) {
-                    //TODO: Remove assert
-                    assert.equal(err, null);
-                }
-
-            );
+                collection.insert([{
+                        v: parseFloat(receivedMessage[1]),
+                        ts: new Date()
+                    }], function (err) {
+                        //TODO: Remove assert
+                        assert.equal(err, null);
+                    }
+                );
+            }
         });
 
         socket.bind(55655, "192.168.227.255", function() {

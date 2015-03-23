@@ -318,8 +318,10 @@ module.exports = {
                             sum = sum + doc.v;
                         });
                         if (docs2.length > 0) {
-                            var avg = ((sum / docs2.length) * 230)*(((docs2[docs2.length-1].ts - docs2[0].ts)/1000)/3600);
-                            var trivia = "Strombedarf Heute: "+(avg/1000).toFixed(2)+" kWh";
+                            var avg = (((sum / docs2.length) * 230)*(((docs2[docs2.length-1].ts - docs2[0].ts)/1000)/3600))/1000;
+                            // 0.24ct/kWh bei ePrimo
+                            var trivia = "Today: "+avg.toFixed(2)+" kWh, "+(0.24*avg).toFixed(2)+" €";
+                            trivia += "  Currently: "+ (docs2[docs2.length-1].v*230).toFixed(0)+" W";
                         }
                         res.render('graph', {
                             sensor: docs[0].sensor,

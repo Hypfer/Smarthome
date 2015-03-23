@@ -12,7 +12,7 @@
 <div class="content" style="">
     <div class="gauges">
         {{#each gauges}}
-            <a href="#" data-featherlight="/graph/{{sensor}}">
+            <a href="#" data-featherlight="/graph/{{sensor}}?minutes={{minutes}}">
                 <div class="gauge_body" style="float:left;#position:relative;"><!--<span class="gauge_title">{{fN}}</span>-->{{{body}}}</div>
             </a>
         {{/each}}

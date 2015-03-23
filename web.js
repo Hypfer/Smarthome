@@ -147,7 +147,8 @@ module.exports = {
                     gauges.push({
                         body: gaugeTemplate(gaugeOptions),
                         fN: doc.fN,
-                        sensor: doc.sensor
+                        sensor: doc.sensor,
+                        minutes: minutes
                     });
                 });
             });
@@ -296,12 +297,46 @@ module.exports = {
             }).toArray(function(err, docs) {
                 if(err) return res.status(500).json(err);
 
-                res.render('graph', {
-                    sensor: docs[0].sensor,
-                    title:  docs[0].fN,
-                    type:   docs[0].value,
-                    minutes: minutes
-                });
+                if(docs[0].gauge == "amp") {
+
+                    var collection2 = db.collection(req.params.id);
+                    var start = new Date().setHours(0,0,0,0);
+                    var end = new Date().setHours(23,59,59,999);
+
+                    collection2.find({
+                        ts: {
+                            $gte: new Date(start),
+                            $lte: new Date(end)
+                        }
+                    }).toArray(function(err, docs) {
+                        if(err) return res.status(500).json(err);
+
+                        var sum = 0;
+
+
+                        docs.forEach(function(doc) {
+                            sum = sum + doc.v;
+                        });
+                        if (docs.length > 0) {
+                            var avg = ((sum / docs.length) * 230)*(((docs[docs.length-1].ts - docs[0].ts)/1000)/3600);
+                            var trivia = "Strombedarf Heute: "+(avg/1000)+" kWh";
+                        }
+                        res.render('graph', {
+                            sensor: docs[0].sensor,
+                            title:  docs[0].fN,
+                            type:   docs[0].value,
+                            minutes: minutes,
+                            trivia: trivia
+                        });
+                    });
+                } else {
+                    res.render('graph', {
+                        sensor: docs[0].sensor,
+                        title:  docs[0].fN,
+                        type:   docs[0].value,
+                        minutes: minutes
+                    });
+                }
             });
         });
         app.get('/graph/:id/*', function(req, res) {

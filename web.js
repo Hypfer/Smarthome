@@ -308,18 +308,18 @@ module.exports = {
                             $gte: new Date(start),
                             $lte: new Date(end)
                         }
-                    }).toArray(function(err, docs) {
+                    }).toArray(function(err, docs2) {
                         if(err) return res.status(500).json(err);
 
                         var sum = 0;
 
 
-                        docs.forEach(function(doc) {
+                        docs2.forEach(function(doc) {
                             sum = sum + doc.v;
                         });
-                        if (docs.length > 0) {
-                            var avg = ((sum / docs.length) * 230)*(((docs[docs.length-1].ts - docs[0].ts)/1000)/3600);
-                            var trivia = "Strombedarf Heute: "+(avg/1000)+" kWh";
+                        if (docs2.length > 0) {
+                            var avg = ((sum / docs2.length) * 230)*(((docs2[docs2.length-1].ts - docs2[0].ts)/1000)/3600);
+                            var trivia = "Strombedarf Heute: "+(avg/1000).toFixed(2)+" kWh";
                         }
                         res.render('graph', {
                             sensor: docs[0].sensor,

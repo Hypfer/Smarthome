@@ -6,9 +6,134 @@
     <script type="text/javascript" src="/gauge.min.js"></script>
     <script type="text/javascript" src="/featherlight.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/featherlight.min.css">
+    <style type="text/css">
+        #settingsButton {
+            position:absolute;
+            right: 10px;
+            top: 10px;
+        }
+        .settingsHeadline {
+            font-size: 32px;
+            text-decoration: none;
+            text-shadow: none;
+            border-radius: 4px;
+            color: #fff;
+            padding-left: 5px;
+            padding-right: 5px;
+            background-color: #34495e;
+            margin-bottom: 15px;
+            height: 50px;
+            padding-top: 8px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
 
+            user-select: none;
+            cursor: default;
+        }
+        .settingsKey {
+            font-size: 24px;
+            text-decoration: none;
+            text-shadow: none;
+            border-radius: 4px;
+            color: #fff;
+            padding-left: 5px;
+            padding-right: 5px;
+            background-color: #16a085;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+
+            user-select: none;
+            cursor: default;
+        }
+
+
+        .arrow {
+            display:inline-block;
+            width:7px;
+            height:7px;
+            line-height:7px;
+            border-top:3px solid #aaa;
+            border-right:3px solid #aaa;
+            -ms-transform:rotate(45deg);
+            -moz-transform:rotate(45deg);
+            -webkit-transform:rotate(45deg);
+            transform:rotate(45deg);
+        }
+        .arrow-settings {
+            float:right;
+            margin-right:5px;
+            margin-top:12px;
+        }
+        .arrow:hover {
+            border-color:#444;
+        }
+        .arrow-down {
+            -ms-transform:rotate(135deg);
+            -moz-transform:rotate(135deg);
+            -webkit-transform:rotate(135deg);
+            transform:rotate(135deg);
+        }
+        .arrow-left {
+            -ms-transform:rotate(225deg);
+            -moz-transform:rotate(225deg);
+            -webkit-transform:rotate(225deg);
+            transform:rotate(225deg);
+        }
+        .arrow-up{
+            -ms-transform:rotate(-45deg);
+            -moz-transform:rotate(-45deg);
+            -webkit-transform:rotate(-45deg);
+            transform:rotate(-45deg);
+        }
+        .btn {
+            color: #ffffff;
+            background: #4c4d4d;
+            padding: 5px 10px 5px 10px;
+            text-decoration: none;
+            font-size:16px;
+        }
+
+        .btn:hover {
+            background: #3cb0fd;
+            text-decoration: none;
+        }
+
+    </style>
+    <script type="text/javascript">
+        function toggleSettingsContainer(sensor) {
+            var sensorSettingsDiv = $('*[data-sensor="'+sensor+'"]');
+            var sensorSettingsArrow = $('*[data-sensor-arrow="'+sensor+'"]');
+            if (sensorSettingsDiv.css('display') == "none") {
+                sensorSettingsDiv.attr("style","");
+                sensorSettingsArrow.removeClass("arrow-up").addClass("arrow-down");
+            } else {
+                sensorSettingsDiv.css("display","none");
+                sensorSettingsArrow.removeClass("arrow-down").addClass("arrow-up");
+            }
+        }
+        function saveSensorSettings(sensor) {
+            var objectToSave = {};
+            $.each(
+                    $("input[name$='_"+sensor+"']"), function() {
+                        objectToSave[$(this).attr("name").split("_")[0]] = $(this).val()
+                    });
+            console.dir(objectToSave);
+            $.ajax({
+                url: '/settings',
+                type: 'PUT',
+                data: objectToSave,
+                success: function(result) {
+                    if(result) alert(result);
+                }
+            });
+        }
+
+    </script>
 </head>
 <body>
+<a href="#" data-featherlight="/settings" id="settingsButton"><img src="/gear.svg"></a>
 <div class="content" style="">
     <div class="gauges">
         {{#each gauges}}

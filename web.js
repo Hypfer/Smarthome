@@ -171,7 +171,7 @@ module.exports = {
             });
         });
         app.get('/api/sensors/:id', function(req, res) {
-            var collection = db.collection(req.params.id);
+            var collection = db.collection("readings_"+req.params.id);
             var minutes = req.query.minutes ? req.query.minutes : 30;
             var chunkSize = Math.floor(minutes / 100);
             if (chunkSize > 10) {
@@ -202,7 +202,7 @@ module.exports = {
         });
         app.get('/api/sensors/:id/AverageByTimeframe', function(req,res){
 
-            var collection = db.collection(req.params.id);
+            var collection = db.collection("readings_"+req.params.id);
 
             if (req.query.start) {
                 var start = req.query.start;
@@ -256,7 +256,7 @@ module.exports = {
             var returnObj = {};
 
             async.each(path, function(sensor, cb) {
-                var collection = db.collection(sensor);
+                var collection = db.collection("readings_"+sensor);
 
                 collection.find({
                     ts: {
@@ -299,7 +299,7 @@ module.exports = {
 
                 if(docs[0].gauge == "amp") {
 
-                    var collection2 = db.collection(req.params.id);
+                    var collection2 = db.collection("readings_"+req.params.id);
                     var start = new Date().setHours(0,0,0,0);
                     var end = new Date().setHours(23,59,59,999);
 
@@ -384,7 +384,7 @@ module.exports = {
             });
         });
         app.get("/gauge/:id", function(req, res) {
-            var collection = db.collection(req.params.id);
+            var collection = db.collection("readings_"+req.params.id);
 
             var minutes = req.query.minutes ? req.query.minutes : 5;
                 minutes = minutes > 30 ? 30 : minutes;
@@ -429,6 +429,44 @@ module.exports = {
                     res.render("gauge", gaugeOptions);
                 });
             });
+        });
+        app.get("/settings", function(req,res){
+            db.collectionNames(function (err, collectionList) {
+                if(err) return res.status(500).json(err);
+
+
+                var sensorsWithData =[];
+                for(i = 0; i < collectionList.length;i++) { // no forEach because mongo hates me
+                    if(collectionList[i].name.indexOf("readings_") !=-1) {
+                        sensorsWithData.push(collectionList[i].name.split("readings_")[1]);
+                    }
+                }
+                var collection = db.collection("Sensors");
+                collection.find().toArray(function(err, sensorMappings) {
+                    if(err) return res.status(500).json(err);
+
+                    var mappedNames = [];
+                    sensorMappings.forEach(function(mapping){
+                       mappedNames.push(mapping.sensor);
+                    });
+                    res.render("settings",{
+                        unmappedSensors: _.difference(sensorsWithData, mappedNames),
+                        sensorMappings: sensorMappings
+                    });
+                });
+            });
+        });
+        app.put("/settings", function(req,res){
+            var collection = db.collection("Sensors");
+            collection.update(
+                {sensor:req.body.sensor},
+                req.body,
+                {upsert:true},
+                function(err){
+                    if(err) return res.status(500).json(err);
+                    res.status(200).json(err);
+                }
+            );
         });
 
         //POWER SOCKETS

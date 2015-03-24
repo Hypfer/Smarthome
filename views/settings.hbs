@@ -1,0 +1,48 @@
+<div id="settings" style="overflow-x: hidden;">
+    <div id="mappedSensors">
+        <div class="settingsHeadline">Mappings</div>
+        {{#each sensorMappings}}
+            <div class="settingsKey">
+                {{fN}}<i class="arrow arrow-settings arrow-up"
+                         data-sensor-arrow="{{sensor}}"
+                         onclick="toggleSettingsContainer('{{sensor}}');">&nbsp;</i>
+                <div data-sensor="{{sensor}}" style="display:none">
+                    <hr style="margin-top:2px">
+                    Label:  <input style="margin-bottom:10px" name="value_{{sensor}}" type="text" size="30" maxlength="30" value="{{value}}"> <br>
+                    Gauge:  <input style="margin-bottom:10px" name="gauge_{{sensor}}" type="text" size="30" maxlength="30" value="{{gauge}}"> <br>
+                    Name:  <input style="margin-bottom:10px" name="fN_{{sensor}}" type="text" size="30" maxlength="30" value="{{fN}}"> <br>
+                    Sensor: <input  style="margin-bottom:10px" name="sensor_{{sensor}}" type="text" size="30" maxlength="30" value="{{sensor}}" readonly disabled="disabled">
+                    <div style="float:right;margin-top:8px">
+                        <a class="btn" onclick="saveSensorSettings('{{sensor}}')">Save</a>
+                    </div>
+
+
+                </div>
+            </div>
+            <br>
+        {{/each}}
+    </div>
+    <div id="unmappedSensors">
+        <div class="settingsHeadline">Unmapped</div>
+        {{#each unmappedSensors}}
+            <div class="settingsKey">
+                {{this}}<i class="arrow arrow-settings arrow-up"
+                         data-sensor-arrow="{{this}}"
+                         onclick="toggleSettingsContainer('{{this}}');">&nbsp;</i>
+                <div data-sensor="{{this}}" style="display:none">
+                    <hr style="margin-top:2px">
+                    Label:  <input style="margin-bottom:10px" name="value_{{this}}" type="text" size="30" maxlength="30" value=""> <br>
+                    Gauge:  <input style="margin-bottom:10px" name="gauge_{{this}}" type="text" size="30" maxlength="30" value=""> <br>
+                    Name:  <input style="margin-bottom:10px" name="fN_{{this}}" type="text" size="30" maxlength="30" value=""> <br>
+                    Sensor: <input  style="margin-bottom:10px" name="sensor_{{this}}" type="text" size="30" maxlength="30" value="{{this}}" readonly disabled="disabled">
+                    <div style="float:right;margin-top:8px">
+                        <a class="btn" onclick="saveSensorSettings('{{this}}')">Save</a>
+                    </div>
+
+
+                </div>
+            </div>
+            <br>
+        {{/each}}
+    </div>
+</div>

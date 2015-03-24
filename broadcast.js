@@ -21,7 +21,7 @@ module.exports = {
             if(receivedMessage[0] == "EVENT") {
                 console.log(message.toString());
             } else {
-                var collection = db.collection(receivedMessage[0]);
+                var collection = db.collection("readings_"+receivedMessage[0]);
 
                 collection.insert([{
                         v: parseFloat(receivedMessage[1]),

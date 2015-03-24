@@ -11,7 +11,7 @@ module.exports = {
         var _poll = function () {
             child_process.exec("/usr/local/bin/airsensor -o -v", function(err, stdout) {
 
-                var collection = db.collection("AIRQW");
+                var collection = db.collection("readings_AIRQW");
                 if(parseFloat(stdout) != 0) {
 
                     collection.insert([{

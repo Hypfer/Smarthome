@@ -1,10 +1,15 @@
 /**
  * Created by hypfer on 10.02.15.
  */
+
+var secrets = require('./secrets.json');
 var web = require('./web');
 var broadcast = require('./broadcast');
 var local = require('./local');
 var dect = require('./dect');
+
+var PushBullet = require('pushbullet');
+var pusher = new PushBullet(secrets.pbApiKey);
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -23,7 +28,7 @@ MongoClient.connect(url, function(err, _db) {
     // setup airsensor polling
     local.local(db);
 
-    dect.dect(db);
+    dect.dect(db, pusher, secrets);
 
     // setup HTTP server
     web._setupWeb(db);

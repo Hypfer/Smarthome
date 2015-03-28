@@ -2,10 +2,9 @@ var gigaset = require("./lib/gigaset");
 assert = require('assert');
 
 module.exports = {
-    dect: function(db) {
+    dect: function(db, pusher, secrets) {
         var states = {IDLE: 1, WAITING_FOR_CALLERID: 2};
         var state = states.IDLE;
-
         gigaset.on("data", function (event) {
 
             if (event == "CLIP:EXTERN") {
@@ -26,6 +25,7 @@ module.exports = {
         });
 
         function handleIncomingCall(number) {
+            pusher.note(secrets.pbMail, 'Smarthome', number+' calling', function(error, response) {});
             var collection = db.collection("DECT");
                 collection.insert([{
                         v: number,

@@ -5,6 +5,7 @@
     "express": "^4.11.2",
     "hbs": "^2.8.0",
     "mongodb": "^1.4.30",
+    "pushbullet": "^1.4.3",
     "serialport": "^1.6.3",
     "underscore": "^1.7.0"
   }

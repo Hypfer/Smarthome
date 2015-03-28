@@ -125,7 +125,13 @@
                 type: 'PUT',
                 data: objectToSave,
                 success: function(result) {
-                    if(result) alert(result);
+                    if(result) {
+                        alert(result);
+                    } else {
+                        $('*[data-sensor="'+sensor+'"]').css("display","none");
+                        $('*[data-sensor-arrow="'+sensor+'"]').removeClass("arrow-down").addClass("arrow-up");
+
+                    }
                 }
             });
         }

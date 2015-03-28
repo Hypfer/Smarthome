@@ -4,6 +4,7 @@
 var web = require('./web');
 var broadcast = require('./broadcast');
 var local = require('./local');
+var dect = require('./dect');
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -21,6 +22,8 @@ MongoClient.connect(url, function(err, _db) {
 
     // setup airsensor polling
     local.local(db);
+
+    dect.dect(db);
 
     // setup HTTP server
     web._setupWeb(db);

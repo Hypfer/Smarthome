@@ -2,9 +2,8 @@
  * Created by hypfer on 11.02.15.
  */
 var dgram = require('dgram');
-var assert = require('assert');
 module.exports = {
-    _setupBroadcastListener: function(db) {
+    _setupBroadcastListener: function (db, agenda) {
 
         var socket = dgram.createSocket("udp4");
 
@@ -17,21 +16,77 @@ module.exports = {
 
         socket.on('message', function(message) {
             receivedMessage = message.toString().split("|");
-            //console.log(message.toString());
-            if(receivedMessage[0] == "EVENT") {
-                console.log(message.toString());
-            } else {
-                var collection = db.collection("readings_"+receivedMessage[0]);
 
-                collection.insert([{
-                        v: parseFloat(receivedMessage[1]),
-                        ts: new Date()
-                    }], function (err) {
-                        //TODO: Remove assert
-                        assert.equal(err, null);
+            var collection = db.collection("readings_" + receivedMessage[0]);
+            receivedMessage[1] = parseFloat(receivedMessage[1]);
+            collection.insert([{
+                    v: receivedMessage[1],
+                    ts: new Date()
+                }], function (err) {
+                    if (err) {
+                        agenda.now('handleEvent', {
+                            ts: new Date(),
+                            severity: "danger",
+                            type: "GeneralError",
+                            emitter: "ERROR",
+                            detail: err
+                        });
+                    } else {
+                        db.collection("Sensors").findOne({sensorID: receivedMessage[0]}, function (err, doc) {
+                            if (err) {
+                                agenda.now('handleEvent', {
+                                    ts: new Date(),
+                                    severity: "danger",
+                                    type: "GeneralError",
+                                    emitter: "ERROR",
+                                    detail: err
+                                });
+                            } else {
+                                if (doc) {
+                                    if (doc.limits) {
+                                        if (doc.limits[0] && (receivedMessage[1] < doc.limits[0])) {
+                                            agenda.now('handleEvent', {
+                                                ts: new Date(),
+                                                severity: "warning",
+                                                type: "SensorOutOfBounds",
+                                                emitter: doc.name,
+                                                detail: receivedMessage[1] + " is less than " + doc.limits[0]
+                                            });
+                                        } else if (doc.limits[1] && (receivedMessage[1] > doc.limits[1])) {
+                                            agenda.now('handleEvent', {
+                                                ts: new Date(),
+                                                severity: "warning",
+                                                type: "SensorOutOfBounds",
+                                                emitter: doc.name,
+                                                detail: receivedMessage[1] + " is more than " + doc.limits[1]
+                                            });
+                                        }
+                                    }
+                                    var avg = doc.allTimeAVG ? (doc.allTimeAVG + receivedMessage[1]) / 2 : receivedMessage[1];
+                                    db.collection("Sensors").update({sensorID: receivedMessage[0]},
+                                        {
+                                            $set: {
+                                                lastReading: receivedMessage[1],
+                                                allTimeAVG: avg
+                                            }
+                                        }, function (err) {
+                                            if (err) {
+                                                agenda.now('handleEvent', {
+                                                    ts: new Date(),
+                                                    severity: "danger",
+                                                    type: "GeneralError",
+                                                    emitter: "ERROR",
+                                                    detail: err
+                                                });
+                                            }
+                                        });
+                                }
+                            }
+                        });
                     }
-                );
-            }
+                }
+            );
+
         });
 
         socket.bind(55655, "192.168.227.255", function() {

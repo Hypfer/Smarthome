@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head lang="de">
+    <meta charset="UTF-8">
+    <title>Smarthome</title>
+    <link rel="stylesheet" href="redesign.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script type="text/javascript" src="jquery-2.1.1.js"></script>
+    <script type="text/javascript" src="jgestures.js"></script>
+    <script type="text/javascript" src="redesign.js"></script>
+    <script type="text/javascript" src="handlebars-v3.0.0.js"></script>
+    <script type="text/javascript" src="moment.min.js"></script>
+    <script type="text/javascript" src="highcharts.js"></script>
+</head>
+<body>
+<div class="page-left"><span class="page-left-icon"></span></div>
+<div class="page-right"><span class="page-right-icon"></span></div>
+
+<div class="page" id="MAIN" style="display: none;"></div>
+
+<div class="page" id="SETTINGS" style="display: none;"></div>
+
+<div class="page" id="SWITCHES" style="display: none;">
+    Hier sind Lichtschalter und so zeugs
+</div>
+
+<script id="sensor-template" type="text/x-handlebars-template">
+    <div class="singleSensor" data-sensorID="{{sensorID}}">
+        <div class="sensor" data-sensorID="{{sensorID}}" onclick="toggleSensorExpansion($(this))">
+            <h4>{{name}}</h4>
+
+            <div class="sensorDataContainer" data-sensorID="{{sensorID}}">
+                <div data-sensorID="{{sensorID}}" class="sensorReadings"
+                     style="color: {{color}};background-color: {{bgcolor}};">{{lastReading}}
+                </div>
+                {{unit}}
+            </div>
+        </div>
+        <div class="sensorExpansion" data-sensorID="{{sensorID}}" style="display:none;">
+            Platzhalter für den Graphen
+        </div>
+    </div>
+</script>
+
+<script id="event-template" type="text/x-handlebars-template">
+    <div class="event alert alert-{{severity}}" data-eventID="{{_id}}">
+        <span class="close" onclick="dismissEvent($(this).parent())">&times;</span>
+        <i class="timestamp">{{ts}}</i> {{text}}
+    </div>
+</script>
+
+<script id="settings-template" type="text/x-handlebars-template">
+    <h1 class="banner" style="text-align: center; margin-bottom: 30px;">Settings</h1>
+
+    <h3 class="banner">Mapped sensors</h3>
+    {{#each sensors}}
+    <div class="singleOptionKey" data-sensorID="{{sensorID}}">
+        <div class="optionKey" data-sensorID="{{sensorID}}" onclick="toggleOptionExpansion($(this))">
+            <h4>{{name}}</h4>
+
+            <div class="sensorDataContainer" data-sensorID="{{sensorID}}">
+                <div data-sensorID="{{sensorID}}" class="sensorReadings"
+                     style="color: {{color}};background-color: {{bgcolor}};">{{lastReading}}
+                </div>
+                {{unit}}
+            </div>
+        </div>
+        <div class="optionKeyExpansion" data-sensorID="{{sensorID}}" style="display:none;">
+            <form id="form_{{sensorID}}">
+                Name: <input placeholder="Name" name="name" type="text" size="30" maxlength="30" value="{{name}}"> <br>
+                Unit: <input placeholder="Unit" name="unit" type="text" size="30" maxlength="30" value="{{unit}}"> <br>
+                Limits: <input placeholder="Limits (Array)" name="limits" type="text" size="30" maxlength="30"
+                               value="{{limits}}"> <br>
+            </form>
+        </div>
+    </div>
+    {{/each}}
+    <h3 class="banner">Unmapped sensors</h3>
+    {{#each unmappedSensors}}
+    <div class="singleOptionKey" data-sensorID="{{sensorID}}">
+        <div class="optionKey" data-sensorID="{{sensorID}}" onclick="toggleOptionExpansion($(this))">
+            <h4>{{sensorID}}</h4>
+        </div>
+        <div class="optionKeyExpansion" data-sensorID="{{sensorID}}" style="display:none;">
+            <form id="form_{{sensorID}}">
+                Name: <input placeholder="Name" name="name" type="text" size="30" maxlength="30" value="{{name}}"> <br>
+                Unit: <input placeholder="Unit" name="unit" type="text" size="30" maxlength="30" value="{{unit}}"> <br>
+                Limits: <input placeholder="Limits (Array)" name="limits" type="text" size="30" maxlength="30"
+                               value="{{limits}}"> <br>
+            </form>
+        </div>
+    </div>
+    {{/each}}
+    <h3 class="banner">Other</h3>
+
+    <div class="toggleButton" onclick="if(confirm('Are you sure?')) updateSettings();"><h4>Refresh Settings</h4></div>
+</script>
+
+<script id="graph-template" type="text/x-handlebars-template">
+    <div id="container_{{sensorID}}" style="width:100%;height:100%;"></div>
+    {{#if trivia}}
+    {{trivia}}
+    {{/if}}
+</script>
+</body>
+</html>

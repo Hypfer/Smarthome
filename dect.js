@@ -1,8 +1,7 @@
 var gigaset = require("./lib/gigaset");
-assert = require('assert');
 
 module.exports = {
-    dect: function(db, pusher, secrets) {
+    dect: function (db, agenda) {
         var states = {IDLE: 1, WAITING_FOR_CALLERID: 2};
         var state = states.IDLE;
         gigaset.on("data", function (event) {
@@ -25,18 +24,15 @@ module.exports = {
         });
 
         function handleIncomingCall(number) {
-            pusher.note(secrets.pbMail, 'Smarthome', number+' calling', function(error, response) {});
-            var collection = db.collection("DECT");
-                collection.insert([{
-                        v: number,
-                        ts: new Date()
-                    }], function (err) {
-                        assert.equal(err, null);
-                    }
-                );
-            }
+            agenda.now('handleEvent', {
+                ts: new Date(),
+                severity: "info",
+                type: "IncomingCall",
+                emitter: "Gigaset",
+                detail: number + " calling"
+            });
         }
-
+    }
 
         /*
          In case of new features break glass

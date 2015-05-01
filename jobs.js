@@ -21,21 +21,21 @@ module.exports = {
                         db.collection("Sensors").findOne({sensorID: "AIRQW"}, function (err, doc) {
                             if (doc) {
                                 if (doc.limits) {
-                                    if (doc.limits[0] && (receivedMessage[1] < doc.limits[0])) {
+                                    if (doc.limits[0] && (parseFloat(stdout) < doc.limits[0])) {
                                         agenda.now('handleEvent', {
                                             ts: new Date(),
                                             severity: "warning",
                                             type: "SensorOutOfBounds",
                                             emitter: doc.name,
-                                            detail: receivedMessage[1] + " is less than " + doc.limits[0]
+                                            detail: parseFloat(stdout) + " is less than " + doc.limits[0]
                                         });
-                                    } else if (doc.limits[1] && (receivedMessage[1] > doc.limits[1])) {
+                                    } else if (doc.limits[1] && (parseFloat(stdout) > doc.limits[1])) {
                                         agenda.now('handleEvent', {
                                             ts: new Date(),
                                             severity: "warning",
                                             type: "SensorOutOfBounds",
                                             emitter: doc.name,
-                                            detail: receivedMessage[1] + " is more than " + doc.limits[1]
+                                            detail: parseFloat(stdout) + " is more than " + doc.limits[1]
                                         });
                                     }
                                 }
@@ -57,7 +57,7 @@ module.exports = {
                 }
             })
         });
-        agenda.every("30 seconds", "pollLocalAirSensor");
+        agenda.every("45 seconds", "pollLocalAirSensor");
 
 
         agenda.define("pollenChecker", function (job, done) {
@@ -140,12 +140,14 @@ module.exports = {
 
 
         agenda.define("handleEvent", function (job, done) {
-            db.collection("EVENTS").insert([job.attrs.data], function (err) {
-                if (err) console.log("Shit. Unable to report err", err);
-                pusher.note(secrets.pbMail, 'Smarthome', job.attrs.data.emitter.concat(": ", job.attrs.data.detail), function (err, response) {
-                    done();
+            if (job.attrs.data.type !== "SensorOutOfBounds") {
+                db.collection("EVENTS").insert([job.attrs.data], function (err) {
+                    if (err) console.log("Shit. Unable to report err", err);
+                    pusher.note(secrets.pbMail, 'Smarthome', job.attrs.data.emitter.concat(": ", job.attrs.data.detail), function (err, response) {
+                        done();
+                    });
                 });
-            });
+            }
         });
     }
 };

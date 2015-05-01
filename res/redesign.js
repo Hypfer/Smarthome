@@ -44,16 +44,16 @@ function updateSensors(sensorArray) {
         // wert updaten
         sensorArray.forEach(function (sensor) {
             sensor = transformSensor(sensor);
-            var $sensor = $(".sensorReadings [data-sensorID='" + sensor.sensorID + "']");
+            var $sensor = $(".sensorReadings[data-sensorID='" + sensor.sensorID + "']");
             $sensor.css({
-                "color": sensor.color,
-                "background-color": sensor.bgcolor
+                "color": sensor.color
             }).text(sensor.lastReading);
         });
     }
 }
 
 function transformSensor(sensor) {
+    //TODO: Farbverlauf.. oder canvas anzeige?
     var sensorReadingColors = [ // good, medium, bad
         ["#3c763d", "#d6e9c6"],// color, background
         ["#8a6d3b", "#faebcc"],
@@ -65,16 +65,12 @@ function transformSensor(sensor) {
     var warnRange = (sensor.limits[1] - sensor.limits[0]) * 0.25;
     if (sensor.lastReading < sensor.limits[0]) {
         sensor.color = sensorReadingColors[2][0];
-        sensor.bgcolor = sensorReadingColors[2][1];
     } else if (sensor.lastReading <= sensor.limits[0] + warnRange || sensor.lastReading >= sensor.limits[1] - warnRange) {
         sensor.color = sensorReadingColors[1][0];
-        sensor.bgcolor = sensorReadingColors[1][1];
     } else if (sensor.lastReading >= sensor.limits[1]) {
         sensor.color = sensorReadingColors[2][0];
-        sensor.bgcolor = sensorReadingColors[2][1];
     } else {
         sensor.color = sensorReadingColors[0][0];
-        sensor.bgcolor = sensorReadingColors[0][1];
     }
     sensor.lastReading = sensor.lastReading ? sensor.lastReading : "???";
 
@@ -83,7 +79,6 @@ function transformSensor(sensor) {
 
 
 function dismissEvent(notification) {
-    console.log(notification.attr("data-eventID"));
     $.ajax({
         url: '/api/events',
         type: 'DELETE',
@@ -137,7 +132,7 @@ function toggleOptionExpansion(self) {
                     } else {
                         self.next().hide();
                         var background = self.css("background-color");
-                        self.css("background-color", "#dff0d8").delay(600).queue(function (next) {
+                        self.css("background-color", "#3c763d").delay(600).queue(function (next) {
                             $(this).css("background-color", background);
                             next();
                         });
@@ -147,7 +142,7 @@ function toggleOptionExpansion(self) {
             });
         } else {
             var background = self.css("background-color");
-            self.css("background-color", "#f2dede").delay(600).queue(function (next) {
+            self.css("background-color", "#a94442").delay(600).queue(function (next) {
                 $(this).css("background-color", background);
                 next();
             });
@@ -194,6 +189,7 @@ function updateSettings() {
                 var settingsTemplate = Handlebars.compile(settingsTemplateSource);
 
                 $("#SETTINGS").html(settingsTemplate(result));
+                $("#SETTINGS").find(".loader").remove();
             }
         }
     });
@@ -214,6 +210,7 @@ $(document).ready(function () {
         $("#" + localStorage.getItem("page")).show();
     }
     updateMain();
+    $("#MAIN").find(".loader").remove();
     setInterval(updateMain, 60000);
     updateSettings();
 

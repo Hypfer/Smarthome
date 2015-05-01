@@ -1,7 +1,7 @@
 html {
     margin: 0 auto;
     max-width: 900px;
-    background-color: rgba(0, 0, 0, 0.07);
+    background-color: #161618;
 }
 
 .optionKeyExpansion input {
@@ -15,13 +15,10 @@ html {
     margin-bottom: 20px;
     margin-left: 2.5%;
     margin-right: 2.5%;
-    border-left: 1px solid #474747;
-    border-right: 1px solid #474747;
-    border-bottom: 1px solid #474747;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    color: #050505;
-    background-color: #A1A1A1;
+    color: #ffffff;
+    background-color: #2A2E31;
     position: relative;
     align-items: center;
     text-align: left;
@@ -30,10 +27,9 @@ html {
 .optionKey {
     padding-left: 15px;
     margin-bottom: 20px;
-    border: 1px solid #474747;
     border-radius: 4px;
-    color: #050505;
-    background-color: #A1A1A1;
+    color: #ffffff;
+    background-color: #2A2E31;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -47,12 +43,12 @@ html {
 .toggleButton {
     padding-left: 15px;
     margin-bottom: 20px;
-    border: 1px solid #474747;
+    border: 1px solid #2A2E31;
     text-align: center;
     border-radius: 4px;
     font-size: 1.2em;
-    color: #050505;
-    background-color: #A1A1A1;
+    color: #ffffff;
+    background-color: #2A2E31;
     align-items: center;
     cursor: pointer;
     -webkit-touch-callout: none;
@@ -67,6 +63,7 @@ html {
     padding-left: 10px;
     border-bottom: 1px solid #474747;
     font-size: 1.5em;
+    color: #ffffff;
 }
 
 div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
@@ -96,7 +93,7 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
         display: inline-block;
         width: 5px;
         height: 32px;
-        background-color: #000000;
+        background-color: #FFFFFF;
         opacity: 0.2;
     }
 
@@ -130,13 +127,10 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     margin-bottom: 20px;
     margin-left: 2.5%;
     margin-right: 2.5%;
-    border-left: 1px solid #474747;
-    border-right: 1px solid #474747;
-    border-bottom: 1px solid #474747;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    color: #050505;
-    background-color: #A1A1A1;
+    color: #ffffff;
+    background-color: #2A2E31;
     display: flex;
     align-items: center;
     text-align: center;
@@ -146,10 +140,9 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
 .sensor {
     padding-left: 15px;
     margin-bottom: 20px;
-    border: 1px solid #474747;
     border-radius: 4px;
-    color: #050505;
-    background-color: #A1A1A1;
+    color: #ffffff;
+    background-color: #2A2E31;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -170,12 +163,13 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     text-align: center;
     margin-left: auto;
     margin-right: 10px;
+    font-style: italic;
 }
 
 .sensorReadings {
-    border: 1px solid #000000;
     width: 120px;
-    font-size: 1.2em;
+    font-size: 1.3em;
+    font-style: normal;
 }
 
 .alert {
@@ -290,4 +284,46 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     cursor: pointer;
     filter: alpha(opacity=50);
     opacity: .5;
+}
+
+.loader {
+    margin: 84px auto 32px auto;
+    width: 100%;
+    text-align: left;
+    height: 1px;
+    background-color: #555;
+}
+
+.loader > div {
+    width: 0;
+    height: 1px;
+    background-color: #ee4d2e;
+    -webkit-animation: loader 30s infinite ease-out;
+    animation: loader 30s infinite ease-out;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@-webkit-keyframes loader {
+    0% {
+        width: 0;
+    }
+    5% {
+        width: 75%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+@keyframes loader {
+    0% {
+        width: 0;
+    }
+    5% {
+        width: 75%;
+    }
+    100% {
+        width: 100%;
+    }
 }

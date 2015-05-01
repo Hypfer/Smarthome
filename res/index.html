@@ -36,7 +36,7 @@
 
 <script id="sensor-template" type="text/x-handlebars-template">
     <div class="singleSensor" data-sensorID="{{sensorID}}">
-        <div class="sensor" data-sensorID="{{sensorID}}" onclick="toggleSensorExpansion($(this))">
+        <div class="sensor" data-sensorID="{{sensorID}}" onclick="toggleSensorExpansion($(this))" data-unit="{{unit}}">
             <h4>{{name}}</h4>
 
             <div class="sensorDataContainer" data-sensorID="{{sensorID}}">

@@ -87,7 +87,7 @@ function toggleSensorExpansion(self) {
                 var graphTemplate = Handlebars.compile(graphTemplateSource);
                 self.next().html(graphTemplate({sensorID: self.attr("data-sensorID")}));
                 self.next().show();
-                highchartsGraph(self.attr("data-sensorID"), "ABC", result);
+                highchartsGraph(self.attr("data-sensorID"), self.attr("data-unit"), result);
             }
         });
     }
@@ -285,28 +285,34 @@ function highchartsGraph(sensorID, unit, data) {
         chart: {
             type: 'spline',
             marginRight: 10,
-            height: 350
+            height: 350,
+            backgroundColor: 'rgba(255, 255, 255, 0)'
         },
         title: {
-            text: unit
+            text: ''
         },
         xAxis: {
             type: 'datetime',
-            tickPixelInterval: 150
+            tickPixelInterval: 150,
+            labels: {
+                style: {
+                    color: '#ffffff'
+                }
+            }
         },
         yAxis: {
             title: {
-                text: unit
+                text: ""
             },
             plotLines: [{
                 value: 0,
                 width: 1
-            }]
-        },
-        subtitle: {
-            text: document.ontouchstart === undefined ?
-                'Click and drag in the plot area to zoom in' :
-                'Pinch the chart to zoom in'
+            }],
+            labels: {
+                style: {
+                    color: '#ffffff'
+                }
+            }
         },
 
         plotOptions: {
@@ -334,7 +340,8 @@ function highchartsGraph(sensorID, unit, data) {
         },
         series: [{
             name: unit,
-            data: data
+            data: data,
+            color: "#ee4d2e"
         }]
     });
 }

@@ -19,6 +19,8 @@ module.exports = {
 
             var collection = db.collection("readings_" + receivedMessage[0]);
             receivedMessage[1] = parseFloat(receivedMessage[1]);
+            receivedMessage[1] = receivedMessage[0] === "EMON" ? (receivedMessage[1] * 230) : receivedMessage[1];
+            receivedMessage[1] = parseFloat(receivedMessage[1].toFixed(2)); // The fuck, javascript
             collection.insert([{
                     v: receivedMessage[1],
                     ts: new Date()

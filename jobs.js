@@ -69,71 +69,38 @@ module.exports = {
                     "3": "high"
                 };
                 var notificationString = "";
-                var collection = db.collection("readings_POROG");
-                collection.insert([{
-                        v: pollen["Roggen"],
-                        ts: new Date()
-                    }], function (err) {
-                        assert.equal(err, null);
-                        if (pollen["Roggen"] > 0) notificationString = "Roggen: " + mapping[pollen["Roggen"]];
-                        var collection = db.collection("readings_POGRA");
-                        collection.insert([{
-                            v: pollen["Gräser"],
-                            ts: new Date()
-                        }], function (err) {
-                            assert.equal(err, null);
-                            if (pollen["Gräser"] > 0) notificationString += "\nGräser: " + mapping[pollen["Gräser"]];
-                            if (notificationString != "") {
-                                //TODO: Eventuell limit auf mittel bis schwer?
-                                //TODO: Aufsplitten INFO/Warning
-                                agenda.now('handleEvent', {
-                                    ts: new Date(),
-                                    severity: "warning",
-                                    type: "PollenWarning",
-                                    emitter: "Pollenflug",
-                                    detail: notificationString
-                                });
-                            }
-                            done();
-                        });
-                    }
-                );
+                if (pollen["Roggen"] > 0) notificationString = "Roggen: " + mapping[pollen["Roggen"]];
+                if (pollen["Gräser"] > 0) notificationString += "\nGräser: " + mapping[pollen["Gräser"]];
+                if (notificationString != "") {
+                    //TODO: Eventuell limit auf mittel bis schwer?
+                    //TODO: Aufsplitten INFO/Warning
+                    agenda.now('handleEvent', {
+                        ts: new Date(),
+                        severity: "warning",
+                        type: "PollenWarning",
+                        emitter: "Pollenflug",
+                        detail: notificationString
+                    });
+                }
+                done();
             });
-
         });
         agenda.every("45 5 * * *", "pollenChecker");
 
 
         agenda.define("uvChecker", function (job, done) {
             uv_index.getUVIndex(function (uvIndex) {
-                var collection = db.collection("readings_UVINDEX");
-                collection.insert([{
-                        v: uvIndex,
-                        ts: new Date()
-                    }], function (err) {
-                        if (err) {
-                            agenda.now('handleEvent', {
-                                ts: new Date(),
-                                severity: "danger",
-                                type: "GeneralError",
-                                emitter: "ERROR",
-                                detail: err
-                            });
-                        } else {
-                            //TODO: Aufsplitten INFO/Warning
-                            if (uvIndex > 4) {
-                                agenda.now('handleEvent', {
-                                    ts: new Date(),
-                                    severity: "warning",
-                                    type: "UVWarning",
-                                    emitter: "UV-Index",
-                                    detail: uvIndex
-                                });
-                            }
-                        }
-                        done();
-                    }
-                    );
+                //TODO: Aufsplitten INFO/Warning
+                if (uvIndex > 4) {
+                    agenda.now('handleEvent', {
+                        ts: new Date(),
+                        severity: "warning",
+                        type: "UVWarning",
+                        emitter: "UV-Index",
+                        detail: uvIndex
+                    });
+                }
+                done();
             });
         });
         agenda.every("45 5 * * *", "uvChecker");

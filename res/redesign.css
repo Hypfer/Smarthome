@@ -168,9 +168,12 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
 
 .sensorReadings {
     width: 120px;
-    font-size: 1.3em;
-    font-style: normal;
 }
+
+.sensorValueContainer {
+    margin-top: -5px;
+}
+
 
 .alert {
     padding: 15px;

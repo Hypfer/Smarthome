@@ -40,10 +40,9 @@
             <h4>{{name}}</h4>
 
             <div class="sensorDataContainer" data-sensorID="{{sensorID}}">
-                <div data-sensorID="{{sensorID}}" class="sensorReadings"
-                     style="color: {{color}};background-color: {{bgcolor}};">{{lastReading}}
-                </div>
-                {{unit}}
+                <canvas id="canv_{{sensorID}}" data-sensorID="{{sensorID}}" class="sensorReadings" width="150"
+                        height="24"></canvas>
+                <div class="sensorValueContainer" data-sensorID="{{sensorID}}">{{lastReading}} {{unit}}</div>
             </div>
         </div>
         <div class="sensorExpansion" data-sensorID="{{sensorID}}" style="display:none;">
@@ -69,10 +68,7 @@
             <h4>{{name}}</h4>
 
             <div class="sensorDataContainer" data-sensorID="{{sensorID}}">
-                <div data-sensorID="{{sensorID}}" class="sensorReadings"
-                     style="color: {{color}};background-color: {{bgcolor}};">{{lastReading}}
-                </div>
-                {{unit}}
+                <div class="sensorValueContainer" data-sensorID="{{sensorID}}">{{lastReading}} {{unit}}</div>
             </div>
         </div>
         <div class="optionKeyExpansion" data-sensorID="{{sensorID}}" style="display:none;">
@@ -81,6 +77,8 @@
                 Unit: <input placeholder="Unit" name="unit" type="text" size="30" maxlength="30" value="{{unit}}"> <br>
                 Limits: <input placeholder="Limits (Array)" name="limits" type="text" size="30" maxlength="30"
                                value="{{limits}}"> <br>
+                Limit Type: <input placeholder="Limit Type" name="limitType" type="text" size="30" maxlength="30"
+                                   value="{{limitType}}"> <br>
             </form>
         </div>
     </div>
@@ -97,6 +95,8 @@
                 Unit: <input placeholder="Unit" name="unit" type="text" size="30" maxlength="30" value="{{unit}}"> <br>
                 Limits: <input placeholder="Limits (Array)" name="limits" type="text" size="30" maxlength="30"
                                value="{{limits}}"> <br>
+                Limit Type: <input placeholder="Limit Type" name="limitType" type="text" size="30" maxlength="30"
+                                   value="{{limitType}}"> <br>
             </form>
         </div>
     </div>

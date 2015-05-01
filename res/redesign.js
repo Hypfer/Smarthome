@@ -35,46 +35,31 @@ function updateSensors(sensorArray) {
     //TODO: Genauer vergleichen. Bei Abweichungen nicht alles neu sondern nur die Abweichung
     if ($currentlyRenderedSensors.length != sensorArray.length) {
         sensorArray.forEach(function (sensor) {
-            sensor = transformSensor(sensor);
             $("#MAIN").append(sensorTemplate(sensor));
+            drawIndicator(
+                document.getElementById("canv_" + sensor.sensorID),
+                sensor.lastReading,
+                sensor.limits[0],
+                sensor.limits[1],
+                sensor.limitType
+            );
         });
         $currentlyRenderedSensors.remove();
         //volles rendern + momentane löschen
     } else {
         // wert updaten
         sensorArray.forEach(function (sensor) {
-            sensor = transformSensor(sensor);
-            var $sensor = $(".sensorReadings[data-sensorID='" + sensor.sensorID + "']");
-            $sensor.css({
-                "color": sensor.color
-            }).text(sensor.lastReading);
+            var $sensor = $(".sensorValueContainer[data-sensorID='" + sensor.sensorID + "']");
+            $sensor.text(sensor.lastReading + " " + sensor.unit);
+            drawIndicator(
+                document.getElementById("canv_" + sensor.sensorID),
+                sensor.lastReading,
+                sensor.limits[0],
+                sensor.limits[1],
+                sensor.limitType
+            );
         });
     }
-}
-
-function transformSensor(sensor) {
-    //TODO: Farbverlauf.. oder canvas anzeige?
-    var sensorReadingColors = [ // good, medium, bad
-        ["#3c763d", "#d6e9c6"],// color, background
-        ["#8a6d3b", "#faebcc"],
-        ["#a94442", "#ebccd1"]
-    ];
-    //TODO: This doesn't look right
-    sensor.limits[0] = sensor.limits[0] ? sensor.limits[0] : -99999999999;
-    sensor.limits[1] = sensor.limits[1] ? sensor.limits[1] : 99999999999;
-    var warnRange = (sensor.limits[1] - sensor.limits[0]) * 0.25;
-    if (sensor.lastReading < sensor.limits[0]) {
-        sensor.color = sensorReadingColors[2][0];
-    } else if (sensor.lastReading <= sensor.limits[0] + warnRange || sensor.lastReading >= sensor.limits[1] - warnRange) {
-        sensor.color = sensorReadingColors[1][0];
-    } else if (sensor.lastReading >= sensor.limits[1]) {
-        sensor.color = sensorReadingColors[2][0];
-    } else {
-        sensor.color = sensorReadingColors[0][0];
-    }
-    sensor.lastReading = sensor.lastReading ? sensor.lastReading : "???";
-
-    return sensor;
 }
 
 
@@ -117,7 +102,8 @@ function toggleOptionExpansion(self) {
         newSettings["name"] = $expansion.find("[name='name']").val();
         newSettings["unit"] = $expansion.find("[name='unit']").val();
         newSettings["limits"] = $expansion.find("[name='limits']").val();
-        if (newSettings.name && newSettings.unit && newSettings.limits) {
+        newSettings["limitType"] = $expansion.find("[name='limitType']").val();
+        if (newSettings.name && newSettings.unit && newSettings.limits && newSettings.limitType) {
             limitsString = newSettings.limits;
             newSettings.limits = limitsString.split(",");
             newSettings.limits[0] = parseFloat(newSettings.limits[0]);
@@ -185,11 +171,12 @@ function updateSettings() {
         type: 'get',
         success: function (result) {
             if (result) {
+                var $settings = $("#SETTINGS");
                 var settingsTemplateSource = $("#settings-template").html();
                 var settingsTemplate = Handlebars.compile(settingsTemplateSource);
 
-                $("#SETTINGS").html(settingsTemplate(result));
-                $("#SETTINGS").find(".loader").remove();
+                $settings.html(settingsTemplate(result));
+                $settings.find(".loader").remove();
             }
         }
     });
@@ -202,15 +189,15 @@ $(document).ready(function () {
             useUTC: false
         }
     });
-
+    var $main = $("#MAIN");
     if (!localStorage.getItem("page")) {
-        $("#MAIN").show();
+        $main.show();
         localStorage.setItem("page", "MAIN");
     } else {
         $("#" + localStorage.getItem("page")).show();
     }
     updateMain();
-    $("#MAIN").find(".loader").remove();
+    $main.find(".loader").remove();
     setInterval(updateMain, 60000);
     updateSettings();
 
@@ -228,6 +215,70 @@ $(document).ready(function () {
     })
 
 });
+
+function drawIndicator(canvas, current, min, max, type) {
+    var colors, grd, center, context;
+    colors = {
+        bad: "#a94442",
+        med: "#8a6d3b",
+        good: "#3c763d"
+    };
+    context = canvas.getContext('2d');
+    context.beginPath();
+    context.rect(0, 0, 150, 16);
+    grd = context.createLinearGradient(0, 0, 150, 16);
+    if (typeof min !== "undefined" && typeof max !== "undefined") {
+        switch (type) {
+            case "normal":
+                grd.addColorStop(0, colors.good);
+                grd.addColorStop(0.5, colors.med);
+                grd.addColorStop(1, colors.bad);
+                break;
+            case "inverse":
+
+                grd.addColorStop(0, colors.bad);
+                grd.addColorStop(0.5, colors.med);
+                grd.addColorStop(1, colors.good);
+                break;
+            case "middle":
+                grd.addColorStop(0, colors.bad);
+                grd.addColorStop(0.25, colors.med);
+                grd.addColorStop(0.5, colors.good);
+                grd.addColorStop(0.75, colors.med);
+                grd.addColorStop(1, colors.bad);
+                break;
+            default:
+                grd.addColorStop(0, colors.good);
+                grd.addColorStop(1, colors.good);
+        }
+    } else {
+        grd.addColorStop(0, colors.good);
+        grd.addColorStop(1, colors.good);
+    }
+    context.fillStyle = grd;
+    context.fill();
+    context.closePath();
+    if (current) {
+        if (current <= min) {
+            center = 0;
+        } else if (current >= max) {
+            center = 100;
+        } else {
+            center = ((current - min) / (max - min)) * 100
+        }
+    } else {
+        center = 50; // if undefined
+    }
+    center = center * 1.5; // hardcoded for 150px canvas width
+
+    context.beginPath();
+    context.moveTo(center - 7.5, 0);
+    context.lineTo(center + 7.5, 0);
+    context.lineTo(center, 8);
+    context.fillStyle = "#F5F7F6";
+    context.fill();
+    context.closePath();
+}
 
 function highchartsGraph(sensorID, unit, data) {
     $("#container_" + sensorID).highcharts({

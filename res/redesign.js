@@ -80,8 +80,7 @@ function toggleSensorExpansion(self) {
         self.next().hide();
     } else {
 
-        //TODO: Add Minutes param
-        $.getJSON('/api/sensors/' + self.attr("data-sensorID"), function (result) {
+        $.getJSON('/api/sensors/' + self.attr("data-sensorID") + "?minutes=" + localStorage.getItem("minutes"), function (result) {
             if (result) {
                 var graphTemplateSource = $("#graph-template").html();
                 var graphTemplate = Handlebars.compile(graphTemplateSource);
@@ -184,6 +183,9 @@ function updateSettings() {
 
 $(document).ready(function () {
     moment.locale("de");
+    if (!localStorage.getItem("minutes")) {
+        localStorage.setItem("minutes", 30);
+    }
     Highcharts.setOptions({
         global: {
             useUTC: false
@@ -344,4 +346,12 @@ function highchartsGraph(sensorID, unit, data) {
             color: "#ee4d2e"
         }]
     });
+}
+
+function setScope() {
+    //TODO: Beautify this
+    var minutes = prompt("Minuten?", localStorage.getItem("minutes"));
+    if (!isNaN(minutes)) {
+        localStorage.setItem("minutes", minutes);
+    }
 }

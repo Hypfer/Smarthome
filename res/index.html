@@ -103,7 +103,8 @@
     {{/each}}
     <h3 class="banner">Other</h3>
 
-    <div class="toggleButton" onclick="if(confirm('Are you sure?')) updateSettings();"><h4>Refresh Settings</h4></div>
+    <div class="toggleButton" onclick="setScope();"><h4>Set scope</h4></div>
+    <div class="toggleButton" onclick="if(confirm('Are you sure?')) location.reload();"><h4>Refresh</h4></div>
 </script>
 
 <script id="graph-template" type="text/x-handlebars-template">

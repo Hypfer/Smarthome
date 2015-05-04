@@ -81,15 +81,17 @@ function dismissEvent(notification) {
 function toggleSensorExpansion(self) {
     if (self.next().is(":visible")) {
         self.next().hide();
+        self.next().html('<div style="height:350px; width:100%;"><div class="loader"><div></div></div></div>');
     } else {
-
+        self.next().show();
         $.getJSON('/api/sensors/' + self.attr("data-sensorID") + "?minutes=" + localStorage.getItem("minutes"), function (result) {
             if (result) {
-                var graphTemplateSource = $("#graph-template").html();
-                var graphTemplate = Handlebars.compile(graphTemplateSource);
-                self.next().html(graphTemplate({sensorID: self.attr("data-sensorID")}));
-                self.next().show();
-                highchartsGraph(self.attr("data-sensorID"), self.attr("data-unit"), result);
+                if (self.next().is(":visible")) {
+                    var graphTemplateSource = $("#graph-template").html();
+                    var graphTemplate = Handlebars.compile(graphTemplateSource);
+                    self.next().html(graphTemplate({sensorID: self.attr("data-sensorID")}));
+                    highchartsGraph(self.attr("data-sensorID"), self.attr("data-unit"), result);
+                }
             }
         });
     }

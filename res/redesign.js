@@ -31,6 +31,7 @@ function updateSensors(sensorArray) {
     var sensorTemplateSource = $("#sensor-template").html();
     var sensorTemplate = Handlebars.compile(sensorTemplateSource);
 
+    var $main = $("#MAIN");
     var $currentlyRenderedSensors = $(".singleSensor");
     //TODO: Genauer vergleichen. Bei Abweichungen nicht alles neu sondern nur die Abweichung
     if ($currentlyRenderedSensors.length != sensorArray.length) {
@@ -45,6 +46,7 @@ function updateSensors(sensorArray) {
             );
         });
         $currentlyRenderedSensors.remove();
+        $main.find(".loader").remove();
         //volles rendern + momentane löschen
     } else {
         // wert updaten
@@ -59,6 +61,7 @@ function updateSensors(sensorArray) {
                 sensor.limitType
             );
         });
+        $main.find(".loader").remove();
     }
 }
 
@@ -199,7 +202,6 @@ $(document).ready(function () {
         $("#" + localStorage.getItem("page")).show();
     }
     updateMain();
-    $main.find(".loader").remove();
     setInterval(updateMain, 60000);
     updateSettings();
 

@@ -81,8 +81,8 @@ function dismissEvent(notification) {
 function toggleSensorExpansion(self) {
     if (self.next().is(":visible")) {
         self.next().hide();
-        self.next().html('<div style="height:350px; width:100%;"><div class="loader"><div></div></div></div>');
     } else {
+        self.next().html('<div style="height:350px; width:100%;"><div class="loader"><div></div></div></div>');
         self.next().show();
         $.getJSON('/api/sensors/' + self.attr("data-sensorID") + "?minutes=" + localStorage.getItem("minutes"), function (result) {
             if (result) {

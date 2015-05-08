@@ -1,6 +1,5 @@
-/**
- * Created by hypfer on 11.02.15.
- */
+"use strict";
+
 var dgram = require('dgram');
 module.exports = {
     _setupBroadcastListener: function (db, agenda) {
@@ -15,7 +14,7 @@ module.exports = {
         });
 
         socket.on('message', function(message) {
-            receivedMessage = message.toString().split("|");
+            var receivedMessage = message.toString().split("|");
 
             var collection = db.collection("readings_" + receivedMessage[0]);
             receivedMessage[1] = parseFloat(receivedMessage[1]);
@@ -92,12 +91,12 @@ module.exports = {
         });
 
         socket.bind(55655, "192.168.227.255", function() {
-            socket.setBroadcast(true)
+            socket.setBroadcast(true);
         });
 
         socket.on('error', function () {
             console.log("Error. Restarting server..");
-            process.nextTick(_setupClient);
-        })
+            process.nextTick(_setupBroadcastListener);
+        });
     }
 };

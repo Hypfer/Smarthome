@@ -1,6 +1,4 @@
-/**
- * Created by hypfer on 11.02.15.
- */
+"use strict";
 var express = require('express'),
     hbs = require('hbs'),
     bodyParser = require('body-parser'),
@@ -12,12 +10,13 @@ var averageChunk = function (data, chunkSize) {
     if (chunkSize > 1) {
         chunkSize = chunkSize > 2 ? chunkSize : chunkSize + 1;
         var slimData = [];
+        var chunk, avgTS, avgV;
         while (data.length > chunkSize) {
-            var chunk = _.first(data, chunkSize);
+            chunk = _.first(data, chunkSize);
             data = _.rest(data, chunkSize - 1);
 
-            var avgTS = Math.floor((chunk[0][0] + chunk[chunkSize - 1][0]) / 2);
-            var avgV = 0;
+            avgTS = Math.floor((chunk[0][0] + chunk[chunkSize - 1][0]) / 2);
+            avgV = 0;
 
             chunk.forEach(function (kV) {
                 avgV = avgV + kV[1];
@@ -26,9 +25,8 @@ var averageChunk = function (data, chunkSize) {
             slimData.push([avgTS, avgV / chunkSize]);
         }
         return slimData;
-    } else {
-        return data;
     }
+    return data;
 };
 
 module.exports = {
@@ -68,9 +66,13 @@ module.exports = {
 
         app.get('/api/main', function (req, res) {
             db.collection("Sensors").find().toArray(function (err, sensors) {
-                if (err) return res.status(500).json(err);
+                if (err) {
+                    return res.status(500).json(err);
+                }
                 db.collection("EVENTS").find().toArray(function (err, events) {
-                    if (err) return res.status(500).json(err);
+                    if (err) {
+                        return res.status(500).json(err);
+                    }
                     res.json({
                         sensors: sensors,
                         events: events
@@ -85,16 +87,16 @@ module.exports = {
 
         app.get('/', function (req, res) {
 
-            res.sendFile('res/index.html', {root: __dirname})
+            res.sendFile('res/index.html', {root: __dirname});
 
         });
 
         app.get('/api/sensors/:id', function (req, res) {
             var collection = db.collection("readings_" + req.params.id);
-            var minutes = req.query.minutes ? req.query.minutes : 30;
+            var minutes = req.query.minutes || 30;
             var chunkSize = Math.floor(minutes / 100);
             if (chunkSize > 10) {
-                chunkSize = 10
+                chunkSize = 10;
             }
 
             collection.find({
@@ -102,7 +104,9 @@ module.exports = {
                     $gt: new Date(new Date() - 1000 * 60 * minutes)
                 }
             }).toArray(function (err, docs) {
-                if (err) return res.status(500).json(err);
+                if (err) {
+                    return res.status(500).json(err);
+                }
 
                 var returnArray = [];
                 docs.forEach(function (doc) {
@@ -212,17 +216,22 @@ module.exports = {
          */
         app.get("/api/settings", function (req, res) {
             db.collectionNames(function (err, collectionList) {
-                if (err) return res.status(500).json(err);
+                if (err) {
+                    return res.status(500).json(err);
+                }
 
                 var sensorsWithData = [];
+                var i;
                 for (i = 0; i < collectionList.length; i++) { // no forEach because mongo hates me
-                    if (collectionList[i].name.indexOf("readings_") != -1) {
+                    if (collectionList[i].name.indexOf("readings_") !== -1) {
                         sensorsWithData.push(collectionList[i].name.split("readings_")[1]);
                     }
                 }
                 var collection = db.collection("Sensors");
                 collection.find().toArray(function (err, sensors) {
-                    if (err) return res.status(500).json(err);
+                    if (err) {
+                        return res.status(500).json(err);
+                    }
 
                     var mappedSensorIDs = [];
                     sensors.forEach(function (mapping) {
@@ -250,7 +259,9 @@ module.exports = {
                 {$set: req.body},
                 {upsert: true},
                 function (err) {
-                    if (err) return res.status(500).json(err);
+                    if (err) {
+                        return res.status(500).json(err);
+                    }
                     res.status(200).json(err);
                 }
             );

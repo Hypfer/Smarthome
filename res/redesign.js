@@ -1,226 +1,6 @@
+"use strict";
+/*global $, alert, Handlebars, prompt, moment, Highcharts*/
 var pages = ["SETTINGS", "MAIN", "SWITCHES"];
-
-function updateMain() {
-    $.ajax({
-        url: "/api/main",
-        type: 'get',
-        success: function (result) {
-            if (result) {
-                updateEvents(result.events);
-                updateSensors(result.sensors);
-            }
-        }
-    });
-}
-
-function updateEvents(eventArray) {
-    var eventTemplateSource = $("#event-template").html();
-    var eventTemplate = Handlebars.compile(eventTemplateSource);
-    $oldEvents = $(".event");
-    //TODO: Wie bei sensoren nur die änderungen rendern
-    eventArray.forEach(function (event) {
-        event.ts = moment(event.ts).fromNow();
-        event.text = event.emitter.concat(": ", event.detail);
-        $("#MAIN").prepend(eventTemplate(event));
-    });
-    $oldEvents.remove();
-}
-
-
-function updateSensors(sensorArray) {
-    var sensorTemplateSource = $("#sensor-template").html();
-    var sensorTemplate = Handlebars.compile(sensorTemplateSource);
-
-    var $main = $("#MAIN");
-    var $currentlyRenderedSensors = $(".singleSensor");
-    //TODO: Genauer vergleichen. Bei Abweichungen nicht alles neu sondern nur die Abweichung
-    if ($currentlyRenderedSensors.length != sensorArray.length) {
-        sensorArray.forEach(function (sensor) {
-            $("#MAIN").append(sensorTemplate(sensor));
-            drawIndicator(
-                document.getElementById("canv_" + sensor.sensorID),
-                sensor.lastReading,
-                sensor.limits[0],
-                sensor.limits[1],
-                sensor.limitType
-            );
-        });
-        $currentlyRenderedSensors.remove();
-        $main.find(".loader").remove();
-        //volles rendern + momentane löschen
-    } else {
-        // wert updaten
-        sensorArray.forEach(function (sensor) {
-            var $sensor = $(".sensorValueContainer[data-sensorID='" + sensor.sensorID + "']");
-            $sensor.text(sensor.lastReading + " " + sensor.unit);
-            drawIndicator(
-                document.getElementById("canv_" + sensor.sensorID),
-                sensor.lastReading,
-                sensor.limits[0],
-                sensor.limits[1],
-                sensor.limitType
-            );
-        });
-        $main.find(".loader").remove();
-    }
-}
-
-
-function dismissEvent(notification) {
-    $.ajax({
-        url: '/api/events',
-        type: 'DELETE',
-        data: {_id: notification.attr("data-eventID")},
-        success: function (result) {
-            //TODO:handle result?
-            notification.remove();
-        }
-    });
-}
-
-function toggleSensorExpansion(self) {
-    if (self.next().is(":visible")) {
-        self.next().hide();
-    } else {
-        self.next().html('<div style="height:350px; width:100%;"><div class="loader"><div></div></div></div>');
-        self.next().show();
-        $.getJSON('/api/sensors/' + self.attr("data-sensorID") + "?minutes=" + localStorage.getItem("minutes"), function (result) {
-            if (result) {
-                if (self.next().is(":visible")) {
-                    var graphTemplateSource = $("#graph-template").html();
-                    var graphTemplate = Handlebars.compile(graphTemplateSource);
-                    self.next().html(graphTemplate({sensorID: self.attr("data-sensorID")}));
-                    highchartsGraph(self.attr("data-sensorID"), self.attr("data-unit"), result);
-                }
-            }
-        });
-    }
-
-}
-function toggleOptionExpansion(self) {
-
-    if (self.next().is(":visible")) {
-        var $expansion = self.next();
-        var newSettings = {};
-        newSettings["sensorID"] = $expansion.attr("data-sensorID");
-        newSettings["name"] = $expansion.find("[name='name']").val();
-        newSettings["unit"] = $expansion.find("[name='unit']").val();
-        newSettings["limits"] = $expansion.find("[name='limits']").val();
-        newSettings["limitType"] = $expansion.find("[name='limitType']").val();
-        if (newSettings.name && newSettings.unit && newSettings.limits && newSettings.limitType) {
-            limitsString = newSettings.limits;
-            newSettings.limits = limitsString.split(",");
-            newSettings.limits[0] = parseFloat(newSettings.limits[0]);
-            newSettings.limits[1] = parseFloat(newSettings.limits[1]);
-            $.ajax({
-                url: '/api/settings',
-                type: 'PUT',
-                data: newSettings,
-                success: function (result) {
-                    if (result) {
-                        alert(result);
-                    } else {
-                        self.next().hide();
-                        var background = self.css("background-color");
-                        self.css("background-color", "#3c763d").delay(600).queue(function (next) {
-                            $(this).css("background-color", background);
-                            next();
-                        });
-
-                    }
-                }
-            });
-        } else {
-            var background = self.css("background-color");
-            self.css("background-color", "#a94442").delay(600).queue(function (next) {
-                $(this).css("background-color", background);
-                next();
-            });
-            self.next().hide();
-        }
-
-
-    } else {
-        self.next().show();
-    }
-}
-
-function switchPage(page) {
-    var currentPage = localStorage.getItem("page");
-    if (page != currentPage) {
-        $("#" + currentPage).hide();
-        $("#" + page).show();
-        localStorage.setItem("page", page);
-    }
-}
-
-function pageLeft() {
-    var page = localStorage.getItem("page");
-    var pageNum = pages.indexOf(page);
-    if (pageNum != 0) {
-        switchPage(pages[pageNum - 1]);
-    }
-}
-function pageRight() {
-    var page = localStorage.getItem("page");
-    var pageNum = pages.indexOf(page);
-    if (pageNum != pages.length - 1) {
-        switchPage(pages[pageNum + 1]);
-    }
-}
-
-function updateSettings() {
-    $.ajax({
-        url: "/api/settings",
-        type: 'get',
-        success: function (result) {
-            if (result) {
-                var $settings = $("#SETTINGS");
-                var settingsTemplateSource = $("#settings-template").html();
-                var settingsTemplate = Handlebars.compile(settingsTemplateSource);
-
-                $settings.html(settingsTemplate(result));
-                $settings.find(".loader").remove();
-            }
-        }
-    });
-}
-
-$(document).ready(function () {
-    moment.locale("de");
-    if (!localStorage.getItem("minutes")) {
-        localStorage.setItem("minutes", 30);
-    }
-    Highcharts.setOptions({
-        global: {
-            useUTC: false
-        }
-    });
-    var $main = $("#MAIN");
-    if (!localStorage.getItem("page")) {
-        $main.show();
-        localStorage.setItem("page", "MAIN");
-    } else {
-        $("#" + localStorage.getItem("page")).show();
-    }
-    updateMain();
-    setInterval(updateMain, 60000);
-    updateSettings();
-
-    $(document).on("swiperight", function () {
-        pageLeft();
-    });
-    $(document).on("swipeleft", function () {
-        pageRight();
-    });
-    $(".page-right").on("click", function () {
-        pageRight();
-    });
-    $(".page-left").on("click", function () {
-        pageLeft();
-    })
-
-});
 
 function drawIndicator(canvas, current, min, max, type) {
     var colors, grd, center, context;
@@ -233,7 +13,7 @@ function drawIndicator(canvas, current, min, max, type) {
     context.beginPath();
     context.rect(0, 0, 150, 16);
     grd = context.createLinearGradient(0, 0, 150, 16);
-    if (typeof min !== "undefined" && typeof max !== "undefined") {
+    if (min !== "undefined" && max !== "undefined") {
         switch (type) {
             case "normal":
                 grd.addColorStop(0, colors.good);
@@ -270,7 +50,7 @@ function drawIndicator(canvas, current, min, max, type) {
         } else if (current >= max) {
             center = 100;
         } else {
-            center = ((current - min) / (max - min)) * 100
+            center = ((current - min) / (max - min)) * 100;
         }
     } else {
         center = 50; // if undefined
@@ -352,6 +132,193 @@ function highchartsGraph(sensorID, unit, data) {
     });
 }
 
+
+function updateEvents(eventArray) {
+    var eventTemplateSource = $("#event-template").html();
+    var eventTemplate = Handlebars.compile(eventTemplateSource);
+    var $oldEvents = $(".event");
+    //TODO: Wie bei sensoren nur die änderungen rendern
+    eventArray.forEach(function (event) {
+        event.ts = moment(event.ts).fromNow();
+        event.text = event.emitter.concat(": ", event.detail);
+        $("#MAIN").prepend(eventTemplate(event));
+    });
+    $oldEvents.remove();
+}
+
+
+function updateSensors(sensorArray) {
+    var sensorTemplateSource = $("#sensor-template").html();
+    var sensorTemplate = Handlebars.compile(sensorTemplateSource);
+
+    var $main = $("#MAIN");
+    var $currentlyRenderedSensors = $(".singleSensor");
+    //TODO: Genauer vergleichen. Bei Abweichungen nicht alles neu sondern nur die Abweichung
+    if ($currentlyRenderedSensors.length !== sensorArray.length) {
+        sensorArray.forEach(function (sensor) {
+            $("#MAIN").append(sensorTemplate(sensor));
+            drawIndicator(
+                document.getElementById("canv_" + sensor.sensorID),
+                sensor.lastReading,
+                sensor.limits[0],
+                sensor.limits[1],
+                sensor.limitType
+            );
+        });
+        $currentlyRenderedSensors.remove();
+        $main.find(".loader").remove();
+        //volles rendern + momentane löschen
+    } else {
+        // wert updaten
+        sensorArray.forEach(function (sensor) {
+            var $sensor = $(".sensorValueContainer[data-sensorID='" + sensor.sensorID + "']");
+            $sensor.text(sensor.lastReading + " " + sensor.unit);
+            drawIndicator(
+                document.getElementById("canv_" + sensor.sensorID),
+                sensor.lastReading,
+                sensor.limits[0],
+                sensor.limits[1],
+                sensor.limitType
+            );
+        });
+        $main.find(".loader").remove();
+    }
+}
+
+
+function dismissEvent(notification) {
+    $.ajax({
+        url: '/api/events',
+        type: 'DELETE',
+        data: {_id: notification.attr("data-eventID")},
+        success: function (result) {
+            //TODO:handle result?
+            notification.remove();
+        }
+    });
+}
+
+function toggleSensorExpansion(self) {
+    if (self.next().is(":visible")) {
+        self.next().hide();
+    } else {
+        self.next().html('<div style="height:350px; width:100%;"><div class="loader"><div></div></div></div>');
+        self.next().show();
+        $.getJSON('/api/sensors/' + self.attr("data-sensorID") + "?minutes=" + localStorage.getItem("minutes"), function (result) {
+            if (result) {
+                if (self.next().is(":visible")) {
+                    var graphTemplateSource = $("#graph-template").html();
+                    var graphTemplate = Handlebars.compile(graphTemplateSource);
+                    self.next().html(graphTemplate({sensorID: self.attr("data-sensorID")}));
+                    highchartsGraph(self.attr("data-sensorID"), self.attr("data-unit"), result);
+                }
+            }
+        });
+    }
+
+}
+function toggleOptionExpansion(self) {
+
+    if (self.next().is(":visible")) {
+        var $expansion = self.next();
+        var newSettings = {};
+        newSettings.sensorID = $expansion.attr("data-sensorID");
+        newSettings.name = $expansion.find("[name='name']").val();
+        newSettings.unit = $expansion.find("[name='unit']").val();
+        newSettings.limits = $expansion.find("[name='limits']").val();
+        newSettings.limitType = $expansion.find("[name='limitType']").val();
+        if (newSettings.name && newSettings.unit && newSettings.limits && newSettings.limitType) {
+            var limitsString = newSettings.limits;
+            newSettings.limits = limitsString.split(",");
+            newSettings.limits[0] = parseFloat(newSettings.limits[0]);
+            newSettings.limits[1] = parseFloat(newSettings.limits[1]);
+            $.ajax({
+                url: '/api/settings',
+                type: 'PUT',
+                data: newSettings,
+                success: function (result) {
+                    if (result) {
+                        alert(result);
+                    } else {
+                        self.next().hide();
+                        var background = self.css("background-color");
+                        self.css("background-color", "#3c763d").delay(600).queue(function (next) {
+                            $(this).css("background-color", background);
+                            next();
+                        });
+
+                    }
+                }
+            });
+        } else {
+            var background = self.css("background-color");
+            self.css("background-color", "#a94442").delay(600).queue(function (next) {
+                $(this).css("background-color", background);
+                next();
+            });
+            self.next().hide();
+        }
+
+
+    } else {
+        self.next().show();
+    }
+}
+
+function switchPage(page) {
+    var currentPage = localStorage.getItem("page");
+    if (page !== currentPage) {
+        $("#" + currentPage).hide();
+        $("#" + page).show();
+        localStorage.setItem("page", page);
+    }
+}
+
+function pageLeft() {
+    var page = localStorage.getItem("page");
+    var pageNum = pages.indexOf(page);
+    if (pageNum !== 0) {
+        switchPage(pages[pageNum - 1]);
+    }
+}
+function pageRight() {
+    var page = localStorage.getItem("page");
+    var pageNum = pages.indexOf(page);
+    if (pageNum !== pages.length - 1) {
+        switchPage(pages[pageNum + 1]);
+    }
+}
+
+function updateSettings() {
+    $.ajax({
+        url: "/api/settings",
+        type: 'get',
+        success: function (result) {
+            if (result) {
+                var $settings = $("#SETTINGS");
+                var settingsTemplateSource = $("#settings-template").html();
+                var settingsTemplate = Handlebars.compile(settingsTemplateSource);
+
+                $settings.html(settingsTemplate(result));
+                $settings.find(".loader").remove();
+            }
+        }
+    });
+}
+
+function updateMain() {
+    $.ajax({
+        url: "/api/main",
+        type: 'get',
+        success: function (result) {
+            if (result) {
+                updateEvents(result.events);
+                updateSensors(result.sensors);
+            }
+        }
+    });
+}
+
 function setScope() {
     //TODO: Beautify this
     var minutes = prompt("Minuten?", localStorage.getItem("minutes"));
@@ -359,3 +326,39 @@ function setScope() {
         localStorage.setItem("minutes", minutes);
     }
 }
+
+$(document).ready(function () {
+    moment.locale("de");
+    if (!localStorage.getItem("minutes")) {
+        localStorage.setItem("minutes", 30);
+    }
+    Highcharts.setOptions({
+        global: {
+            useUTC: false
+        }
+    });
+    var $main = $("#MAIN");
+    if (!localStorage.getItem("page")) {
+        $main.show();
+        localStorage.setItem("page", "MAIN");
+    } else {
+        $("#" + localStorage.getItem("page")).show();
+    }
+    updateMain();
+    setInterval(updateMain, 60000);
+    updateSettings();
+
+    $(document).on("swiperight", function () {
+        pageLeft();
+    });
+    $(document).on("swipeleft", function () {
+        pageRight();
+    });
+    $(".page-right").on("click", function () {
+        pageRight();
+    });
+    $(".page-left").on("click", function () {
+        pageLeft();
+    });
+
+});

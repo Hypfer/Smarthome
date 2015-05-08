@@ -1,6 +1,4 @@
-/**
- * Created by hypfer on 10.02.15.
- */
+"use strict";
 
 var secrets = require('./secrets.json');
 var web = require('./web');
@@ -32,7 +30,9 @@ var MongoClient = require('mongodb').MongoClient;
 var db, url = 'mongodb://localhost:27017/homecontrol';
 
 MongoClient.connect(url, function(err, _db) {
-    if (err) throw err;
+    if (err) {
+        throw err;
+    }
 
     db = _db;
 
@@ -47,7 +47,7 @@ MongoClient.connect(url, function(err, _db) {
     broadcast._setupBroadcastListener(db, agenda);
 
     // setup gigaset connection
-    dect.dect(db, agenda);
+    dect.dect(agenda);
 
     // setup HTTP server
     web._setupWeb(db);

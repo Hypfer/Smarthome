@@ -1,3 +1,4 @@
+"use strict";
 var child_process = require("child_process");
 var assert = require('assert');
 var pollen = require('./lib/hexal_pollen');
@@ -11,7 +12,7 @@ module.exports = {
         agenda.define("pollLocalAirSensor", function (job, done) {
             child_process.exec("/usr/local/bin/airsensor -o -v", function(err, stdout) {
                 var collection = db.collection("readings_AIRQW");
-                if(parseFloat(stdout) != 0) {
+                if (parseFloat(stdout) !== 0) {
 
                     collection.insert([{
                             v: parseFloat(stdout),
@@ -55,7 +56,7 @@ module.exports = {
                 } else {
                     done();
                 }
-            })
+            });
         });
         agenda.every("45 seconds", "pollLocalAirSensor");
 
@@ -69,9 +70,13 @@ module.exports = {
                     "3": "high"
                 };
                 var notificationString = "";
-                if (pollen["Roggen"] > 0) notificationString = "Roggen: " + mapping[pollen["Roggen"]];
-                if (pollen["Gräser"] > 0) notificationString += "\nGräser: " + mapping[pollen["Gräser"]];
-                if (notificationString != "") {
+                if (pollen["Roggen"] > 0) {
+                    notificationString = "Roggen: " + mapping[pollen["Roggen"]];
+                }
+                if (pollen["Gräser"] > 0) {
+                    notificationString += "\nGräser: " + mapping[pollen["Gräser"]];
+                }
+                if (notificationString !== "") {
                     //TODO: Eventuell limit auf mittel bis schwer?
                     //TODO: Aufsplitten INFO/Warning
                     agenda.now('handleEvent', {
@@ -109,7 +114,9 @@ module.exports = {
         agenda.define("handleEvent", function (job, done) {
             if (job.attrs.data.type !== "SensorOutOfBounds") {
                 db.collection("EVENTS").insert([job.attrs.data], function (err) {
-                    if (err) console.log("Shit. Unable to report err", err);
+                    if (err) {
+                        console.log("Shit. Unable to report err", err);
+                    }
                     pusher.note(secrets.pbMail, 'Smarthome', job.attrs.data.emitter.concat(": ", job.attrs.data.detail), function (err, response) {
                         done();
                     });

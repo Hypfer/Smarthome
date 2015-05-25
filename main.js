@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var secrets = require('./secrets.json');
 var web = require('./web');
@@ -19,7 +19,7 @@ agenda._db.update({lockedAt: {$exists: true}}, {$set: {lockedAt: null}}, functio
     if (e) {
         throw e;
     }
-    console.log("Unlocked " + numUnlocked + " jobs.");
+    console.log('Unlocked ' + numUnlocked + ' jobs.');
 });
 
 var PushBullet = require('pushbullet');
@@ -36,7 +36,7 @@ MongoClient.connect(url, function(err, _db) {
 
     db = _db;
 
-    console.log("Connected to MongoDB.");
+    console.log('Connected to MongoDB.');
 
     agenda.start();
 

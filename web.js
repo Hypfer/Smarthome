@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 var express = require('express'),
     hbs = require('hbs'),
     bodyParser = require('body-parser'),
@@ -31,7 +31,7 @@ var averageChunk = function (data, chunkSize) {
 
 module.exports = {
     _setupWeb: function (db) {
-        console.log("Starting Webserver...");
+        console.log('Starting Webserver...');
 
         var app = express();
         app.set('view engine', 'hbs');
@@ -46,8 +46,8 @@ module.exports = {
 
         // CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
         app.all('*', function (req, res, next) {
-            res.header("Access-Control-Allow-Origin", "*");
-            res.header("Access-Control-Allow-Headers", "X-Requested-With");
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Headers', 'X-Requested-With');
             res.header('Access-Control-Allow-Headers', 'Content-Type');
             next();
         });
@@ -56,8 +56,8 @@ module.exports = {
         app.delete('/api/events', function (req, res) {
             try {
                 var eventID = new ObjectID(req.body._id);
-                db.collection("EVENTS").remove({_id: eventID}, function (err, result) {
-                    res.send("OK");
+                db.collection('EVENTS').remove({_id: eventID}, function (err, result) {
+                    res.send('OK');
                 });
             } catch (err) {
                 res.status(500).json(err);
@@ -65,11 +65,11 @@ module.exports = {
         });
 
         app.get('/api/main', function (req, res) {
-            db.collection("Sensors").find().toArray(function (err, sensors) {
+            db.collection('Sensors').find().toArray(function (err, sensors) {
                 if (err) {
                     return res.status(500).json(err);
                 }
-                db.collection("EVENTS").find().toArray(function (err, events) {
+                db.collection('EVENTS').find().toArray(function (err, events) {
                     if (err) {
                         return res.status(500).json(err);
                     }
@@ -92,7 +92,7 @@ module.exports = {
         });
 
         app.get('/api/sensors/:id', function (req, res) {
-            var collection = db.collection("readings_" + req.params.id);
+            var collection = db.collection('readings_' + req.params.id);
             var minutes = req.query.minutes || 30;
             var chunkSize = Math.floor(minutes / 100);
             if (chunkSize > 10) {
@@ -126,12 +126,12 @@ module.exports = {
         /*
          app.get('/api/sensors/:id/AverageByTimeframe', function (req, res) {
 
-         var collection = db.collection("readings_" + req.params.id);
+         var collection = db.collection('readings_' + req.params.id);
 
             if (req.query.start) {
                 var start = req.query.start;
             } else {
-                return res.status(500).send("Missing start parameter");
+                return res.status(500).send('Missing start parameter');
             }
             var end = req.query.end ? req.query.end : new Date();
 
@@ -161,7 +161,7 @@ module.exports = {
 
          app.get('/graph/:id', function (req, res) {
             var sensors = [];
-            var collection = db.collection("Sensors");
+            var collection = db.collection('Sensors');
             var minutes = req.query.minutes ? req.query.minutes : 30;
 
             collection.find({
@@ -169,9 +169,9 @@ module.exports = {
          }).toArray(function (err, docs) {
          if (err) return res.status(500).json(err);
 
-         if (docs[0].gauge == "amp") {
+         if (docs[0].gauge == 'amp') {
 
-         var collection2 = db.collection("readings_" + req.params.id);
+         var collection2 = db.collection('readings_' + req.params.id);
          var start = new Date().setHours(0, 0, 0, 0);
          var end = new Date().setHours(23, 59, 59, 999);
 
@@ -192,8 +192,8 @@ module.exports = {
                         if (docs2.length > 0) {
          var avg = (((sum / docs2.length) * 230) * (((docs2[docs2.length - 1].ts - docs2[0].ts) / 1000) / 3600)) / 1000;
                             // 0.24ct/kWh bei ePrimo
-         var trivia = "Today: " + avg.toFixed(2) + " kWh, " + (0.24 * avg).toFixed(2) + " €";
-         trivia += "  Currently: " + (docs2[docs2.length - 1].v * 230).toFixed(0) + " W";
+         var trivia = 'Today: ' + avg.toFixed(2) + ' kWh, ' + (0.24 * avg).toFixed(2) + ' €';
+         trivia += '  Currently: ' + (docs2[docs2.length - 1].v * 230).toFixed(0) + ' W';
                         }
                         res.render('graph', {
                             sensor: docs[0].sensor,
@@ -214,7 +214,7 @@ module.exports = {
             });
         });
          */
-        app.get("/api/settings", function (req, res) {
+        app.get('/api/settings', function (req, res) {
             db.collectionNames(function (err, collectionList) {
                 if (err) {
                     return res.status(500).json(err);
@@ -223,11 +223,11 @@ module.exports = {
                 var sensorsWithData = [];
                 var i;
                 for (i = 0; i < collectionList.length; i++) { // no forEach because mongo hates me
-                    if (collectionList[i].name.indexOf("readings_") !== -1) {
-                        sensorsWithData.push(collectionList[i].name.split("readings_")[1]);
+                    if (collectionList[i].name.indexOf('readings_') !== -1) {
+                        sensorsWithData.push(collectionList[i].name.split('readings_')[1]);
                     }
                 }
-                var collection = db.collection("Sensors");
+                var collection = db.collection('Sensors');
                 collection.find().toArray(function (err, sensors) {
                     if (err) {
                         return res.status(500).json(err);
@@ -252,8 +252,8 @@ module.exports = {
                 });
             });
         });
-        app.put("/api/settings", function (req, res) {
-            var collection = db.collection("Sensors");
+        app.put('/api/settings', function (req, res) {
+            var collection = db.collection('Sensors');
             collection.update(
                 {sensorID: req.body.sensorID},
                 {$set: req.body},
@@ -269,41 +269,41 @@ module.exports = {
 
         /*
         //POWER SOCKETS
-         app.get("/api/switches", function (req, res) {
-            var collection = db.collection("Switches");
+         app.get('/api/switches', function (req, res) {
+            var collection = db.collection('Switches');
          collection.find().toArray(function (err, docs) {
          if (err) return res.status(500).json(err);
 
                 res.json(docs);
             });
         });
-         app.get("/api/switches/:id/getState", function (req, res) {
+         app.get('/api/switches/:id/getState', function (req, res) {
             //If state capable send state else unknown
 
 
         });
 
-         app.get("/api/switches/:id/:state", function (req, res) {
+         app.get('/api/switches/:id/:state', function (req, res) {
 
-         if (!(req.params.state == "0" || req.params.state == "1")) {
-                return res.status(500).send("INVALID STATE");
+         if (!(req.params.state == '0' || req.params.state == '1')) {
+                return res.status(500).send('INVALID STATE');
             }
-            var collection = db.collection("Switches");
+            var collection = db.collection('Switches');
 
             collection.find({
                 name: req.params.id
          }).toArray(function (err, docs) {
          if (err) return res.status(500).json(err);
                 if (docs.length == 0) {
-                    return res.status(500).send("UNMAPPED SENSOR");
+                    return res.status(500).send('UNMAPPED SENSOR');
                 }
-                res.send("HI");
+                res.send('HI');
 
             });
         });
          */
         app.listen(3001, function () {
-            console.log('Webserver listening on port %s', "3001");
+            console.log('Webserver listening on port %s', '3001');
         });
     }
 };

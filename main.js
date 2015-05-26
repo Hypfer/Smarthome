@@ -12,7 +12,9 @@ var Agenda = require('agenda'),
     agenda = new Agenda({
         name: 'Name',
         db: {
-            address: 'localhost:27017/homecontrol'
+            address: settings.mongodb.host +
+            ':' + settings.mongodb.port + '/' +
+            settings.mongodb.db
         }
     });
 

@@ -1,6 +1,6 @@
 {
   "pushbullet": {
-    "active": true,
+    "active": false,
     "apiKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     "mail": "example@example.com"
   },
@@ -8,7 +8,7 @@
     "active": false
   },
   "udpListener": {
-    "active": true,
+    "active": false,
     "ip": "192.168.255.255",
     "port": 55655
   },
@@ -27,5 +27,31 @@
       "name": "AIRQW",
       "interval": "45 seconds"
     }
-  ]
+  ],
+  "pollen": {
+    "active": false,
+    "plz": 10115,
+    "interval": "45 5 * * *",
+    "pflanzen": [
+      "Ambrosia",
+      "Ampfer",
+      "Beifuß",
+      "Birke",
+      "Buche",
+      "Eiche",
+      "Erle",
+      "Gräser",
+      "Hasel",
+      "Pappel",
+      "Roggen",
+      "Ulme",
+      "Wegerich",
+      "Weide"
+    ]
+  },
+  "uvIndex": {
+    "active": false,
+    "url": "http://www.weatheronline.de/Niedersachsen/Hannover/UVIndex.htm",
+    "interval": "45 5 * * *"
+  }
 }

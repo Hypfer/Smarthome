@@ -61,56 +61,56 @@ module.exports = {
         });
 
 
+        if (settings.pollen.active) {
+            agenda.define('pollenChecker', function (job, done) {
+                pollen.getPollen(settings.pollen.plz, function (pollen) {
+                    var mapping = {
+                        '0': 'error',
+                        '1': 'low',
+                        '2': 'medium',
+                        '3': 'high'
+                    };
+                    var notificationString = '';
+                    settings.pollen.pflanzen.forEach(function (pflanze) {
+                        if (pollen[pflanze] > 0) {
+                            notificationString += '\n' + pflanze + ': ' + mapping[pollen[pflanze]];
+                        }
+                    });
+                    if (notificationString !== '') {
+                        //TODO: Eventuell limit auf mittel bis schwer?
+                        //TODO: Aufsplitten INFO/Warning
+                        agenda.now('handleEvent', {
+                            ts: new Date(),
+                            severity: 'warning',
+                            type: 'PollenWarning',
+                            emitter: 'Pollenflug',
+                            detail: notificationString
+                        });
+                    }
+                    done();
+                });
+            });
+            agenda.every(settings.pollen.interval, 'pollenChecker');
+        }
 
-        agenda.define('pollenChecker', function (job, done) {
-            pollen.getPollen('31535', function (pollen) {
-                var mapping = {
-                    '0': 'error',
-                    '1': 'low',
-                    '2': 'medium',
-                    '3': 'high'
-                };
-                var notificationString = '';
-                if (pollen['Roggen'] > 0) {
-                    notificationString = 'Roggen: ' + mapping[pollen['Roggen']];
-                }
-                if (pollen['Gräser'] > 0) {
-                    notificationString += '\nGräser: ' + mapping[pollen['Gräser']];
-                }
-                if (notificationString !== '') {
-                    //TODO: Eventuell limit auf mittel bis schwer?
+        if (settings.uvIndex.active) {
+            agenda.define('uvChecker', function (job, done) {
+                uv_index.getUVIndex(settings.uvIndex.url, function (uvIndex) {
                     //TODO: Aufsplitten INFO/Warning
-                    agenda.now('handleEvent', {
-                        ts: new Date(),
-                        severity: 'warning',
-                        type: 'PollenWarning',
-                        emitter: 'Pollenflug',
-                        detail: notificationString
-                    });
-                }
-                done();
+                    if (parseFloat(uvIndex) > 4) {
+                        agenda.now('handleEvent', {
+                            ts: new Date(),
+                            severity: 'warning',
+                            type: 'UVWarning',
+                            emitter: 'UV-Index',
+                            detail: uvIndex
+                        });
+                    }
+                    done();
+                });
             });
-        });
-        agenda.every('45 5 * * *', 'pollenChecker');
-
-
-        agenda.define('uvChecker', function (job, done) {
-            uv_index.getUVIndex(function (uvIndex) {
-                //TODO: Aufsplitten INFO/Warning
-                if (uvIndex > 4) {
-                    agenda.now('handleEvent', {
-                        ts: new Date(),
-                        severity: 'warning',
-                        type: 'UVWarning',
-                        emitter: 'UV-Index',
-                        detail: uvIndex
-                    });
-                }
-                done();
-            });
-        });
-        agenda.every('45 5 * * *', 'uvChecker');
-
+            agenda.every(settings.uvIndex.interval, 'uvChecker');
+        }
 
         agenda.define('handleEvent', function (job, done) {
             //TODO: Handle out of bounds

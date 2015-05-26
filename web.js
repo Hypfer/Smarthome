@@ -30,7 +30,7 @@ var averageChunk = function (data, chunkSize) {
 };
 
 module.exports = {
-    _setupWeb: function (db) {
+    _setupWeb: function (db, settings) {
         console.log('Starting Webserver...');
 
         var app = express();
@@ -302,8 +302,8 @@ module.exports = {
             });
         });
          */
-        app.listen(3001, function () {
-            console.log('Webserver listening on port %s', '3001');
+        app.listen(settings.webserver.port, function () {
+            console.log('Webserver listening on port %s', settings.webserver.port);
         });
     }
 };

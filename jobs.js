@@ -7,58 +7,59 @@ var dwd_gds = require('./lib/dwd_gds');
 
 
 module.exports = {
-    jobs: function (db, pusher, agenda, secrets) {
+    jobs: function (db, pusher, agenda, settings) {
 
-        agenda.define('pollLocalAirSensor', function (job, done) {
-            child_process.exec('/usr/local/bin/airsensor -o -v', function(err, stdout) {
-                var collection = db.collection('readings_AIRQW');
-                if (parseFloat(stdout) !== 0) {
-
-                    collection.insert([{
-                            v: parseFloat(stdout),
-                            ts: new Date()
-                    }], function (err, result) {
-                        assert.equal(err, null);
-                        db.collection('Sensors').findOne({sensorID: 'AIRQW'}, function (err, doc) {
-                            if (doc) {
-                                if (doc.limits) {
-                                    if (doc.limits[0] && (parseFloat(stdout) < doc.limits[0])) {
-                                        agenda.now('handleEvent', {
-                                            ts: new Date(),
-                                            severity: 'warning',
-                                            type: 'SensorOutOfBounds',
-                                            emitter: doc.name,
-                                            detail: parseFloat(stdout) + ' is less than ' + doc.limits[0]
-                                        });
-                                    } else if (doc.limits[1] && (parseFloat(stdout) > doc.limits[1])) {
-                                        agenda.now('handleEvent', {
-                                            ts: new Date(),
-                                            severity: 'warning',
-                                            type: 'SensorOutOfBounds',
-                                            emitter: doc.name,
-                                            detail: parseFloat(stdout) + ' is more than ' + doc.limits[1]
-                                        });
-                                    }
-                                }
-                                var avg = doc.allTimeAVG ? (doc.allTimeAVG + parseFloat(stdout)) / 2 : parseFloat(stdout);
-                                db.collection('Sensors').update({sensorID: 'AIRQW'},
-                                    {
-                                        $set: {
-                                            lastReading: parseFloat(stdout),
-                                            allTimeAVG: avg
-                                        }
-                                    }, function (err) {
-                                        done();
+        agenda.define('pollLocalSensor', function (job, done) {
+            //TODO: Sane errorhandling
+            child_process.exec(job.attrs.data.command, function (err, stdout) {
+                var collection = db.collection('readings_' + job.attrs.data.name);
+                collection.insert([{
+                    v: parseFloat(stdout),
+                    ts: new Date()
+                }], function (err, result) {
+                    //TODO: Remove assert
+                    assert.equal(err, null);
+                    db.collection('Sensors').findOne({sensorID: job.attrs.data.name}, function (err, doc) {
+                        if (doc) {
+                            if (doc.limits) {
+                                if (doc.limits[0] && (parseFloat(stdout) < doc.limits[0])) {
+                                    agenda.now('handleEvent', {
+                                        ts: new Date(),
+                                        severity: 'warning',
+                                        type: 'SensorOutOfBounds',
+                                        emitter: doc.name,
+                                        detail: parseFloat(stdout) + ' is less than ' + doc.limits[0]
                                     });
+                                } else if (doc.limits[1] && (parseFloat(stdout) > doc.limits[1])) {
+                                    agenda.now('handleEvent', {
+                                        ts: new Date(),
+                                        severity: 'warning',
+                                        type: 'SensorOutOfBounds',
+                                        emitter: doc.name,
+                                        detail: parseFloat(stdout) + ' is more than ' + doc.limits[1]
+                                    });
+                                }
                             }
-                        });
+                            var avg = doc.allTimeAVG ? (doc.allTimeAVG + parseFloat(stdout)) / 2 : parseFloat(stdout);
+                            db.collection('Sensors').update({sensorID: job.attrs.data.name},
+                                {
+                                    $set: {
+                                        lastReading: parseFloat(stdout),
+                                        allTimeAVG: avg
+                                    }
+                                }, function (err) {
+                                    done();
+                                });
+                        }
                     });
-                } else {
-                    done();
-                }
+                });
             });
         });
-        agenda.every('45 seconds', 'pollLocalAirSensor');
+
+        settings.localSensors.forEach(function (localSensor) {
+            agenda.every(localSensor.interval, 'pollLocalSensor', localSensor);
+        });
+
 
 
         agenda.define('pollenChecker', function (job, done) {
@@ -112,17 +113,30 @@ module.exports = {
 
 
         agenda.define('handleEvent', function (job, done) {
+            //TODO: Handle out of bounds
             if (job.attrs.data.type !== 'SensorOutOfBounds') {
                 db.collection('EVENTS').insert([job.attrs.data], function (err) {
                     if (err) {
                         console.log('Shit. Unable to report err', err);
+                        return done();
                     }
-                    pusher.note(secrets.pbMail, 'Smarthome', job.attrs.data.emitter.concat(': ', job.attrs.data.detail), function (err, response) {
+                    if (pusher) {
+                        pusher.note(settings.pushbullet.mail, 'Smarthome', job.attrs.data.emitter.concat(': ', job.attrs.data.detail), function (err, response) {
+                            done();
+                        });
+                    } else {
                         done();
-                    });
+                    }
                 });
+            } else {
+                done();
             }
         });
+
+        agenda.on('fail', function (err, job) {
+            console.log('Job failed with error: %s', err.message);
+        });
+
     }
 };
 //TODO: Wetterwarnungen

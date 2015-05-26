@@ -1,0 +1,31 @@
+{
+  "pushbullet": {
+    "active": true,
+    "apiKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "mail": "example@example.com"
+  },
+  "gigaset": {
+    "active": false
+  },
+  "udpListener": {
+    "active": true,
+    "ip": "192.168.255.255",
+    "port": 55655
+  },
+  "webserver": {
+    "active": true,
+    "port": 3001
+  },
+  "mongodb": {
+    "host": "localhost",
+    "port": 27017,
+    "db": "homecontrol"
+  },
+  "localSensors": [
+    {
+      "command": "/usr/local/bin/airsensor -o -v",
+      "name": "AIRQW",
+      "interval": "45 seconds"
+    }
+  ]
+}

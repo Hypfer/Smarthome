@@ -1,10 +1,12 @@
 'use strict';
 
-var secrets = require('./secrets.json');
+var settings = require('./settings.json');
 var web = require('./web');
 var broadcast = require('./broadcast');
 var jobs = require('./jobs');
-var dect = require('./dect');
+if (settings.gigaset.active) {
+    var dect = require('./dect');
+}
 
 var Agenda = require('agenda'),
     agenda = new Agenda({
@@ -22,12 +24,17 @@ agenda._db.update({lockedAt: {$exists: true}}, {$set: {lockedAt: null}}, functio
     console.log('Unlocked ' + numUnlocked + ' jobs.');
 });
 
-var PushBullet = require('pushbullet');
-var pusher = new PushBullet(secrets.pbApiKey);
+var PushBullet = require('pushbullet'), pusher;
+
+if (settings.pushbullet) {
+    pusher = new PushBullet(settings.pushbullet.apiKey);
+}
 
 var MongoClient = require('mongodb').MongoClient;
 
-var db, url = 'mongodb://localhost:27017/homecontrol';
+var db, url = 'mongodb://' + settings.mongodb.host +
+    ':' + settings.mongodb.port + '/' +
+    settings.mongodb.db;
 
 MongoClient.connect(url, function(err, _db) {
     if (err) {
@@ -41,14 +48,20 @@ MongoClient.connect(url, function(err, _db) {
     agenda.start();
 
     // setup jobHandler
-    jobs.jobs(db, pusher, agenda, secrets);
+    jobs.jobs(db, pusher, agenda, settings);
 
-    // setup UDP listener
-    broadcast._setupBroadcastListener(db, agenda);
+    if (settings.udpListener.active) {
+        // setup UDP listener
+        broadcast._setupBroadcastListener(db, agenda, settings);
+    }
 
-    // setup gigaset connection
-    dect.dect(agenda);
+    if (settings.gigaset.active) {
+        // setup gigaset connection
+        dect.dect(agenda);
+    }
 
-    // setup HTTP server
-    web._setupWeb(db);
+    if (settings.webserver.active) {
+        // setup HTTP server
+        web._setupWeb(db, settings);
+    }
 });

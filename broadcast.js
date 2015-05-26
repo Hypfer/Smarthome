@@ -2,7 +2,7 @@
 
 var dgram = require('dgram');
 module.exports = {
-    _setupBroadcastListener: function (db, agenda) {
+    _setupBroadcastListener: function (db, agenda, settings) {
 
         var socket = dgram.createSocket('udp4');
 
@@ -18,7 +18,8 @@ module.exports = {
 
             var collection = db.collection('readings_' + receivedMessage[0]);
             receivedMessage[1] = parseFloat(receivedMessage[1]);
-            receivedMessage[1] = receivedMessage[0] === 'EMON' ? (receivedMessage[1] * 230) : receivedMessage[1];
+            //TODO: Aktuelle Spannung messen
+            receivedMessage[1] = receivedMessage[0] === 'EMON' ? (receivedMessage[1] * 223) : receivedMessage[1];
             receivedMessage[1] = parseFloat(receivedMessage[1].toFixed(2)); // The fuck, javascript
             collection.insert([{
                     v: receivedMessage[1],
@@ -90,8 +91,7 @@ module.exports = {
 
         });
 
-        // todo: put this in a separate config file
-        socket.bind(55655, '192.168.227.255', function() {
+        socket.bind(settings.udpListener.port, settings.udpListener.ip, function () {
             socket.setBroadcast(true);
         });
 

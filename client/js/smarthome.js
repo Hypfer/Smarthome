@@ -1,5 +1,5 @@
 "use strict";
-/*global $, alert, Handlebars, prompt, moment, Highcharts*/
+/*global $, alert, Handlebars, prompt, moment, Highcharts, Smarthome*/
 var pages = ["SETTINGS", "MAIN", "SWITCHES"];
 
 function drawIndicator(canvas, current, min, max, type) {
@@ -134,29 +134,24 @@ function highchartsGraph(sensorID, unit, data) {
 
 
 function updateEvents(eventArray) {
-    var eventTemplateSource = $("#event-template").html();
-    var eventTemplate = Handlebars.compile(eventTemplateSource);
     var $oldEvents = $(".event");
     //TODO: Wie bei sensoren nur die änderungen rendern
     eventArray.forEach(function (event) {
         event.ts = moment(event.ts).fromNow();
         event.text = event.emitter.concat(": ", event.detail);
-        $("#MAIN").prepend(eventTemplate(event));
+        $("#MAIN").prepend(Smarthome.Templates.event(event));
     });
     $oldEvents.remove();
 }
 
 
 function updateSensors(sensorArray) {
-    var sensorTemplateSource = $("#sensor-template").html();
-    var sensorTemplate = Handlebars.compile(sensorTemplateSource);
-
     var $main = $("#MAIN");
     var $currentlyRenderedSensors = $(".singleSensor");
     //TODO: Genauer vergleichen. Bei Abweichungen nicht alles neu sondern nur die Abweichung
     if ($currentlyRenderedSensors.length !== sensorArray.length) {
         sensorArray.forEach(function (sensor) {
-            $("#MAIN").append(sensorTemplate(sensor));
+            $("#MAIN").append(Smarthome.Templates.sensor(sensor));
             drawIndicator(
                 document.getElementById("canv_" + sensor.sensorID),
                 sensor.lastReading,
@@ -207,9 +202,7 @@ function toggleSensorExpansion(self) {
         $.getJSON('/api/sensors/' + self.attr("data-sensorID") + "?minutes=" + localStorage.getItem("minutes"), function (result) {
             if (result) {
                 if (self.next().is(":visible")) {
-                    var graphTemplateSource = $("#graph-template").html();
-                    var graphTemplate = Handlebars.compile(graphTemplateSource);
-                    self.next().html(graphTemplate({sensorID: self.attr("data-sensorID")}));
+                    self.next().html(Smarthome.Templates.sensor_graph({sensorID: self.attr("data-sensorID")}));
                     highchartsGraph(self.attr("data-sensorID"), self.attr("data-unit"), result);
                 }
             }
@@ -296,10 +289,8 @@ function updateSettings() {
         success: function (result) {
             if (result) {
                 var $settings = $("#SETTINGS");
-                var settingsTemplateSource = $("#settings-template").html();
-                var settingsTemplate = Handlebars.compile(settingsTemplateSource);
 
-                $settings.html(settingsTemplate(result));
+                $settings.html(Smarthome.Templates.settings(result));
                 $settings.find(".loader").remove();
             }
         }

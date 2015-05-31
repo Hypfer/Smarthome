@@ -1,12 +1,6 @@
-html {
-    margin: 0 auto;
-    max-width: 900px;
-    background-color: #161618;
-}
-
 .optionKeyExpansion input {
     width: 80%;
-    margin: 5px;
+    margin: 5px
 }
 
 .optionKeyExpansion {
@@ -17,19 +11,19 @@ html {
     margin-right: 2.5%;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    color: #ffffff;
-    background-color: #2A2E31;
+    color: #fff;
+    background-color: #2a2e31;
     position: relative;
     align-items: center;
-    text-align: left;
+    text-align: left
 }
 
 .optionKey {
     padding-left: 15px;
     margin-bottom: 20px;
     border-radius: 4px;
-    color: #ffffff;
-    background-color: #2A2E31;
+    color: #fff;
+    background-color: #2a2e31;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -37,25 +31,25 @@ html {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none
 }
 
 .toggleButton {
     padding-left: 15px;
     margin-bottom: 20px;
-    border: 1px solid #2A2E31;
+    border: 1px solid #2a2e31;
     text-align: center;
     border-radius: 4px;
     font-size: 1.2em;
-    color: #ffffff;
-    background-color: #2A2E31;
+    color: #fff;
+    background-color: #2a2e31;
     align-items: center;
     cursor: pointer;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none
 }
 
 .banner {
@@ -63,7 +57,7 @@ html {
     padding-left: 10px;
     border-bottom: 1px solid #474747;
     font-size: 1.5em;
-    color: #ffffff;
+    color: #fff
 }
 
 div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
@@ -72,7 +66,7 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none
 }
 
 @media (min-width: 900px) {
@@ -83,41 +77,34 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
         top: 50%;
         margin-top: -132px;
         font-size: 18px;
-        color: #F5F7F6;
+        color: #f5f7f6;
         padding: 96px 37px 32px 37px;
         cursor: pointer;
-        -webkit-transform: translateZ(0);
+        -webkit-transform: translateZ(0)
     }
 
     span.page-right-icon, span.page-left-icon {
         display: inline-block;
         width: 5px;
         height: 32px;
-        background-color: #FFFFFF;
-        opacity: 0.2;
+        background-color: #fff;
+        opacity: .2
     }
 
     div.page-right:hover span.page-right-icon, div.page-left:hover span.page-left-icon {
         background-color: #ee4d2e;
-        opacity: 1;
+        opacity: 1
     }
 
     div.page-right {
         right: 0;
-        padding-left: 32px;
+        padding-left: 32px
     }
 
     div.page-left {
         left: 0;
-        padding-right: 32px;
+        padding-right: 32px
     }
-}
-
-.timestamp {
-    opacity: 0.8;
-    text-decoration: underline;
-    color: #000000;
-    margin-right: 6px;
 }
 
 .sensorExpansion {
@@ -129,20 +116,20 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     margin-right: 2.5%;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    color: #ffffff;
-    background-color: #2A2E31;
+    color: #fff;
+    background-color: #2a2e31;
     display: flex;
     align-items: center;
     text-align: center;
-    word-wrap: break-word;
+    word-wrap: break-word
 }
 
 .sensor {
     padding-left: 15px;
     margin-bottom: 20px;
     border-radius: 4px;
-    color: #ffffff;
-    background-color: #2A2E31;
+    color: #fff;
+    background-color: #2a2e31;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -150,123 +137,126 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none
 }
 
 .sensor h4 {
     text-align: left;
-    width: calc(50% - 60px);
-    align-self: flex-start;
+    width: calc(-10%);
+    align-self: flex-start
 }
 
 .sensorDataContainer {
     text-align: center;
     margin-left: auto;
     margin-right: 10px;
-    font-style: italic;
+    font-style: italic
 }
 
 .sensorReadings {
-    width: 120px;
+    width: 120px
 }
 
 .sensorValueContainer {
-    margin-top: -5px;
+    margin-top: -5px
 }
 
+.timestamp {
+    opacity: .8;
+    text-decoration: underline;
+    color: #000;
+    margin-right: 6px
+}
 
 .alert {
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 4px
 }
 
 .alert h4 {
     margin-top: 0;
-    color: inherit;
+    color: inherit
 }
 
 .alert .alert-link {
-    font-weight: bold;
+    font-weight: bold
 }
 
-.alert > p,
-.alert > ul {
-    margin-bottom: 0;
+.alert > p, .alert > ul {
+    margin-bottom: 0
 }
 
 .alert > p + p {
-    margin-top: 5px;
+    margin-top: 5px
 }
 
-.alert-dismissable,
-.alert-dismissible {
-    padding-right: 35px;
+.alert-dismissable, .alert-dismissible {
+    padding-right: 35px
 }
 
-.alert-dismissable .close,
-.alert-dismissible .close {
+.alert-dismissable .close, .alert-dismissible .close {
     position: relative;
     top: -2px;
     right: -21px;
-    color: inherit;
+    color: inherit
 }
 
 .alert-success {
     color: #3c763d;
     background-color: #dff0d8;
-    border-color: #d6e9c6;
+    border-color: #d6e9c6
 }
 
 .alert-success hr {
-    border-top-color: #c9e2b3;
+    border-top-color: #c9e2b3
 }
 
 .alert-success .alert-link {
-    color: #2b542c;
+    color: #2b542c
 }
 
 .alert-info {
     color: #31708f;
     background-color: #d9edf7;
-    border-color: #bce8f1;
+    border-color: #bce8f1
 }
 
 .alert-info hr {
-    border-top-color: #a6e1ec;
+    border-top-color: #a6e1ec
 }
 
 .alert-info .alert-link {
-    color: #245269;
+    color: #245269
 }
 
 .alert-warning {
     color: #8a6d3b;
     background-color: #fcf8e3;
-    border-color: #faebcc;
+    border-color: #faebcc
 }
 
 .alert-warning hr {
-    border-top-color: #f7e1b5;
+    border-top-color: #f7e1b5
 }
 
 .alert-warning .alert-link {
-    color: #66512c;
+    color: #66512c
 }
 
 .alert-danger {
     color: #a94442;
     background-color: #f2dede;
-    border-color: #ebccd1;
+    border-color: #ebccd1
 }
 
 .alert-danger hr {
-    border-top-color: #e4b9c0;
+    border-top-color: #e4b9c0
 }
 
 .alert-danger .alert-link {
-    color: #843534;
+    color: #843534
 }
 
 .close {
@@ -277,16 +267,15 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     color: #000;
     text-shadow: 0 1px 0 #fff;
     filter: alpha(opacity=20);
-    opacity: .2;
+    opacity: .2
 }
 
-.close:hover,
-.close:focus {
+.close:hover, .close:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;
     filter: alpha(opacity=50);
-    opacity: .5;
+    opacity: .5
 }
 
 .loader {
@@ -294,7 +283,7 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     width: 100%;
     text-align: left;
     height: 1px;
-    background-color: #555;
+    background-color: #555
 }
 
 .loader > div {
@@ -304,29 +293,49 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     -webkit-animation: loader 30s infinite ease-out;
     animation: loader 30s infinite ease-out;
     -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
+    animation-fill-mode: both
 }
 
 @-webkit-keyframes loader {
     0% {
-        width: 0;
+        width: 0
     }
     5% {
-        width: 75%;
+        width: 75%
     }
     100% {
-        width: 100%;
+        width: 100%
     }
 }
 
 @keyframes loader {
     0% {
-        width: 0;
+        width: 0
     }
     5% {
-        width: 75%;
+        width: 75%
     }
     100% {
-        width: 100%;
+        width: 100%
     }
+}
+
+#footer {
+    text-align: right
+}
+
+#footer > a {
+    color: #888;
+    text-decoration: underline;
+    font-style: italic
+}
+
+#footer > a:hover {
+    color: #f2f5f4
+}
+
+html {
+    margin: 0 auto;
+    max-width: 900px;
+    background-color: #161618
 }

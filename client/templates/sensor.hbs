@@ -1,0 +1,13 @@
+<div class="singleSensor" data-sensorID="{{sensorID}}">
+    <div class="sensor" data-sensorID="{{sensorID}}" onclick="toggleSensorExpansion($(this))" data-unit="{{unit}}">
+        <h4>{{name}}</h4>
+
+        <div class="sensorDataContainer" data-sensorID="{{sensorID}}">
+            <canvas id="canv_{{sensorID}}" data-sensorID="{{sensorID}}" class="sensorReadings" width="150"
+                    height="24"></canvas>
+            <div class="sensorValueContainer" data-sensorID="{{sensorID}}">{{lastReading}} {{unit}}</div>
+        </div>
+    </div>
+    <div class="sensorExpansion" data-sensorID="{{sensorID}}" style="display:none;">
+    </div>
+</div>

@@ -802,7 +802,7 @@
             // determine direction name
             var x = _oDelta[0].lastX,
                 y = _oDelta[0].lastY;
-            direction = null;
+            var direction = null;
 
             if (x == 0 || y / x <= -2 || y / x >= 2) {
                 if (y > 0)
@@ -1362,12 +1362,12 @@
         if (_bHasTouches && _bHasMoved === true && _bHasSwipeGesture === true) {
             _bIsSwipe = true;
             _oDetails.type = 'swipe';
-            _vLimit = $(window).height() / 4;
-            _wLimit = $(window).width() / 4;
-            _sMoveY = _oDetails.delta[0].lastY;
-            _sMoveX = _oDetails.delta[0].lastX;
-            _sMoveYCompare = _sMoveY.toString().replace('-', '');
-            _sMoveXCompare = _sMoveX.toString().replace('-', '');
+            var _vLimit = $(window).height() / 4;
+            var _wLimit = $(window).width() / 4;
+            var _sMoveY = _oDetails.delta[0].lastY;
+            var _sMoveX = _oDetails.delta[0].lastX;
+            var _sMoveYCompare = _sMoveY.toString().replace('-', '');
+            var _sMoveXCompare = _sMoveX.toString().replace('-', '');
 
             if (_sMoveX < 0) {
                 if (_oDetails.delta[0].lastY < _vLimit) {

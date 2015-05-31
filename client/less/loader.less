@@ -1,0 +1,41 @@
+.loader {
+  margin: 84px auto 32px auto;
+  width: 100%;
+  text-align: left;
+  height: 1px;
+  background-color: #555;
+}
+
+.loader > div {
+  width: 0;
+  height: 1px;
+  background-color: #ee4d2e;
+  -webkit-animation: loader 30s infinite ease-out;
+  animation: loader 30s infinite ease-out;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+@-webkit-keyframes loader {
+  0% {
+    width: 0;
+  }
+  5% {
+    width: 75%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes loader {
+  0% {
+    width: 0;
+  }
+  5% {
+    width: 75%;
+  }
+  100% {
+    width: 100%;
+  }
+}

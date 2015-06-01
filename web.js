@@ -52,7 +52,6 @@ module.exports = {
             next();
         });
 
-//NEW
         app.delete('/api/events', function (req, res) {
             try {
                 var eventID = new ObjectID(req.body._id);
@@ -80,10 +79,6 @@ module.exports = {
                 });
             });
         });
-
-
-//END NEW
-
 
         app.get('/', function (req, res) {
 
@@ -123,97 +118,7 @@ module.exports = {
                 res.json(averageChunk(returnArray.sort(sortfunc), chunkSize));
             });
         });
-        /*
-         app.get('/api/sensors/:id/AverageByTimeframe', function (req, res) {
 
-         var collection = db.collection('readings_' + req.params.id);
-
-            if (req.query.start) {
-                var start = req.query.start;
-            } else {
-                return res.status(500).send('Missing start parameter');
-            }
-            var end = req.query.end ? req.query.end : new Date();
-
-            collection.find({
-                ts: {
-                    $gte: new Date(start),
-                    $lte: new Date(end)
-                }
-         }).toArray(function (err, docs) {
-         if (err) return res.status(500).json(err);
-
-                var sum = 0;
-
-         docs.forEach(function (doc) {
-                    sum = sum + doc.v;
-                });
-
-
-                res.json({
-                    sensor: req.params.id,
-                    start: docs.length > 0 ? docs[0].ts : start,
-         end: docs.length > 0 ? docs[docs.length - 1].ts : end,
-         avg: docs.length > 0 ? sum / docs.length : 0
-                });
-            });
-        });
-
-         app.get('/graph/:id', function (req, res) {
-            var sensors = [];
-            var collection = db.collection('Sensors');
-            var minutes = req.query.minutes ? req.query.minutes : 30;
-
-            collection.find({
-                sensor: req.params.id
-         }).toArray(function (err, docs) {
-         if (err) return res.status(500).json(err);
-
-         if (docs[0].gauge == 'amp') {
-
-         var collection2 = db.collection('readings_' + req.params.id);
-         var start = new Date().setHours(0, 0, 0, 0);
-         var end = new Date().setHours(23, 59, 59, 999);
-
-                    collection2.find({
-                        ts: {
-                            $gte: new Date(start),
-                            $lte: new Date(end)
-                        }
-         }).toArray(function (err, docs2) {
-         if (err) return res.status(500).json(err);
-
-                        var sum = 0;
-
-
-         docs2.forEach(function (doc) {
-                            sum = sum + doc.v;
-                        });
-                        if (docs2.length > 0) {
-         var avg = (((sum / docs2.length) * 230) * (((docs2[docs2.length - 1].ts - docs2[0].ts) / 1000) / 3600)) / 1000;
-                            // 0.24ct/kWh bei ePrimo
-         var trivia = 'Today: ' + avg.toFixed(2) + ' kWh, ' + (0.24 * avg).toFixed(2) + ' €';
-         trivia += '  Currently: ' + (docs2[docs2.length - 1].v * 230).toFixed(0) + ' W';
-                        }
-                        res.render('graph', {
-                            sensor: docs[0].sensor,
-         title: docs[0].fN,
-         type: docs[0].value,
-                            minutes: minutes,
-                            trivia: trivia
-                        });
-                    });
-                } else {
-                    res.render('graph', {
-                        sensor: docs[0].sensor,
-         title: docs[0].fN,
-         type: docs[0].value,
-                        minutes: minutes
-                    });
-                }
-            });
-        });
-         */
         app.get('/api/settings', function (req, res) {
             db.collectionNames(function (err, collectionList) {
                 if (err) {
@@ -267,41 +172,6 @@ module.exports = {
             );
         });
 
-        /*
-        //POWER SOCKETS
-         app.get('/api/switches', function (req, res) {
-            var collection = db.collection('Switches');
-         collection.find().toArray(function (err, docs) {
-         if (err) return res.status(500).json(err);
-
-                res.json(docs);
-            });
-        });
-         app.get('/api/switches/:id/getState', function (req, res) {
-            //If state capable send state else unknown
-
-
-        });
-
-         app.get('/api/switches/:id/:state', function (req, res) {
-
-         if (!(req.params.state == '0' || req.params.state == '1')) {
-                return res.status(500).send('INVALID STATE');
-            }
-            var collection = db.collection('Switches');
-
-            collection.find({
-                name: req.params.id
-         }).toArray(function (err, docs) {
-         if (err) return res.status(500).json(err);
-                if (docs.length == 0) {
-                    return res.status(500).send('UNMAPPED SENSOR');
-                }
-                res.send('HI');
-
-            });
-        });
-         */
         app.listen(settings.webserver.port, function () {
             console.log('Webserver listening on port %s', settings.webserver.port);
         });

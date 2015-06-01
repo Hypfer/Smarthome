@@ -1,6 +1,6 @@
 "use strict";
 /*global $, alert, Handlebars, prompt, moment, Highcharts, Smarthome*/
-var pages = ["SETTINGS", "MAIN", "SWITCHES"];
+var pages = ["SETTINGS", "MAIN"];
 
 function drawIndicator(canvas, current, min, max, type) {
     var colors, grd, center, context;
@@ -313,7 +313,7 @@ function updateMain() {
 function setScope() {
     //TODO: Beautify this
     var minutes = prompt("Minuten?", localStorage.getItem("minutes"));
-    if (!isNaN(minutes)) {
+    if (!isNaN(minutes) && minutes !== null) {
         localStorage.setItem("minutes", minutes);
     }
 }

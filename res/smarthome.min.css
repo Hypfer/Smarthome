@@ -60,6 +60,15 @@
     color: #fff
 }
 
+.donate {
+    color: #888;
+    font-size: 1.3em;
+    text-align: center;
+    padding-bottom: 10px;
+    word-wrap: break-word;
+    line-height: 2em
+}
+
 div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     display: none;
     -webkit-touch-callout: none;
@@ -286,7 +295,7 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
     background-color: #555
 }
 
-.loader > div {
+.loader div {
     width: 0;
     height: 1px;
     background-color: #ee4d2e;
@@ -321,16 +330,17 @@ div.page-right, div.page-left, span.page-right-icon, span.page-left-icon {
 }
 
 #footer {
-    text-align: right
+    text-align: right;
+    color: #888
 }
 
-#footer > a {
+#footer a {
     color: #888;
     text-decoration: underline;
     font-style: italic
 }
 
-#footer > a:hover {
+#footer a:hover {
     color: #f2f5f4
 }
 

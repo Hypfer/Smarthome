@@ -6,27 +6,32 @@ var express = require('express'),
     url = require('url'),
     ObjectID = require('mongodb').ObjectID;
 
-var averageChunk = function (data, chunkSize) {
+var averageChunk = function (data, chunkSize, callback) {
     if (chunkSize > 1) {
         chunkSize = chunkSize > 2 ? chunkSize : chunkSize + 1;
         var slimData = [];
-        var chunk, avgTS, avgV;
-        while (data.length > chunkSize) {
-            chunk = _.first(data, chunkSize);
-            data = _.rest(data, chunkSize - 1);
-
-            avgTS = Math.floor((chunk[0][0] + chunk[chunkSize - 1][0]) / 2);
-            avgV = 0;
-
-            chunk.forEach(function (kV) {
-                avgV = avgV + kV[1];
-            });
-
-            slimData.push([avgTS, avgV / chunkSize]);
+        var avgTS = 0,
+            avgV = 0,
+            iterator = 0;
+        data.forEach(function (dataPoint) {
+            avgTS += dataPoint[0]; //timestamp
+            avgV += dataPoint[1]; //value
+            iterator++;
+            if (iterator >= chunkSize) {
+                slimData.push([Math.floor(avgTS / iterator), avgV / iterator]);
+                avgTS = 0;
+                avgV = 0;
+                iterator = 0;
+            }
+        });
+        if (iterator > 0) {
+            slimData.push([Math.floor(avgTS / iterator), avgV / iterator]);
         }
-        return slimData;
+        callback(slimData);
+
+    } else {
+        callback(data);
     }
-    return data;
 };
 
 module.exports = {
@@ -114,8 +119,9 @@ module.exports = {
                 var sortfunc = function (a, b) {
                     return a[0] - b[0];
                 };
-
-                res.json(averageChunk(returnArray.sort(sortfunc), chunkSize));
+                averageChunk(returnArray.sort(sortfunc), chunkSize, function (data) {
+                    res.json(data);
+                });
             });
         });
 
